@@ -13,7 +13,7 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	db, err := database.ConnectDB(cfg)
+	db, err := database.ConnectDBSources(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -21,8 +21,8 @@ func main() {
 
 	r := router.New()
 
-	log.Println("Server starting on port " + cfg.APP_PORT + "...")
-	if err := r.Run(":" + cfg.APP_PORT); err != nil {
+	log.Println("Server starting on port " + cfg.AppPort + "...")
+	if err := r.Run(":" + cfg.AppPort); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }

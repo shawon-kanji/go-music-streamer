@@ -1,8 +1,9 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"go-music-streamer/internal/api/handlers"
+
+	"github.com/gin-gonic/gin"
 )
 
 func New() *gin.Engine {
@@ -13,6 +14,7 @@ func New() *gin.Engine {
 	r.SetTrustedProxies(nil)
 
 	r.GET("/health", handlers.Health)
+	r.POST("/signup", handlers.Signup)
 
 	return r
 }

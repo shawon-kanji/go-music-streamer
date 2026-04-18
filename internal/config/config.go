@@ -4,42 +4,47 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 )
 
+type PostgresDBConfig struct {
+	Host     string `validate:"required"`
+	Port     string `validate:"required"`
+	User     string `validate:"required"`
+	Password string `validate:"required"`
+	Name     string `validate:"required"`
+	SSLMode  string `validate:"required"`
+}
+
 type Config struct {
-	DB_HOST     string
-	DB_PORT     string
-	DB_USER     string
-	DB_PASSWORD string
-	DB_NAME     string
-	DB_SSLMODE  string
-	APP_PORT    string
+	Postgres  PostgresDBConfig
+	DBSources []string
+	AppPort   string
+	ENV       string
 }
 
 func LoadConfig() (Config, error) {
 	_ = godotenv.Load()
 
 	cfg := Config{
-		DB_HOST:     getEnvWithDefault("DB_HOST", "localhost"),
-		DB_PORT:     getEnvWithDefault("DB_PORT", "5432"),
-		DB_USER:     os.Getenv("DB_USER"),
-		DB_PASSWORD: os.Getenv("DB_PASSWORD"),
-		DB_NAME:     os.Getenv("DB_NAME"),
-		DB_SSLMODE:  getEnvWithDefault("DB_SSLMODE", "disable"),
-		APP_PORT:    getEnvWithDefault("APP_PORT", "8080"),
+		Postgres: PostgresDBConfig{
+			Host:     getEnvWithDefault("DB_HOST", "localhost"),
+			Port:     getEnvWithDefault("DB_PORT", "5432"),
+			User:     os.Getenv("DB_USER"),
+			Password: os.Getenv("DB_PASSWORD"),
+			Name:     os.Getenv("DB_NAME"),
+			SSLMode:  getEnvWithDefault("DB_SSLMODE", "disable"),
+		},
+		DBSources: []string{"postgres"}, // Add more sources here as needed
+		AppPort:   getEnvWithDefault("APP_PORT", "8080"),
+		ENV:       getEnvWithDefault("ENV", "development"),
 	}
 
 	fmt.Printf("Loaded config: %+v\n", cfg)
 
-	if cfg.DB_USER == "" {
-		return Config{}, fmt.Errorf("missing DB_USER")
-	}
-	if cfg.DB_PASSWORD == "" {
-		return Config{}, fmt.Errorf("missing DB_PASSWORD")
-	}
-	if cfg.DB_NAME == "" {
-		return Config{}, fmt.Errorf("missing DB_NAME")
+	if err := validator.New().Struct(cfg); err != nil {
+		return Config{}, fmt.Errorf("config validation failed: %w", err)
 	}
 
 	return cfg, nil

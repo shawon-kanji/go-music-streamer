@@ -1,4 +1,4 @@
-package database
+package postgres
 
 import (
 	"go-music-streamer/internal/config"
@@ -8,7 +8,7 @@ import (
 )
 
 func ConnectDB(cfg config.Config) (*gorm.DB, error) {
-	dsn := "host=" + cfg.DB_HOST + " user=" + cfg.DB_USER + " password=" + cfg.DB_PASSWORD + " dbname=" + cfg.DB_NAME + " port=" + cfg.DB_PORT + " sslmode=" + cfg.DB_SSLMODE
+	dsn := "host=" + cfg.Postgres.Host + " user=" + cfg.Postgres.User + " password=" + cfg.Postgres.Password + " dbname=" + cfg.Postgres.Name + " port=" + cfg.Postgres.Port + " sslmode=" + cfg.Postgres.SSLMode
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
