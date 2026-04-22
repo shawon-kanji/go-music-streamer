@@ -1,10 +1,16 @@
 package main
 
 import (
+	"log"
+
+	"go-music-streamer/internal/api/handlers"
 	"go-music-streamer/internal/api/router"
 	"go-music-streamer/internal/config"
 	"go-music-streamer/internal/database"
-	"log"
+	"go-music-streamer/internal/repository"
+	"go-music-streamer/internal/usecase/user"
+
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -13,13 +19,24 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	db, err := database.ConnectDBSources(cfg)
+	dbClient, err := database.ConnectDBSources(cfg)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect to databases: %v", err)
 	}
-	log.Println("Database connection established.", db)
 
-	r := router.New()
+	// Get Postgres DB
+	pgDB, ok := dbClient.GetPostgres().(*gorm.DB)
+	if !ok || pgDB == nil {
+		log.Fatalf("Failed to retrieve Postgres connection")
+	}
+	log.Println("Database connection established.")
+
+	// Wire dependencies: Repository -> UseCase -> Handler
+	userRepo := repository.NewUserRepository(pgDB)
+	userUseCase := user.NewUserUseCase(userRepo)
+	userHandler := handlers.NewUserHandler(userUseCase)
+
+	r := router.New(userHandler)
 
 	log.Println("Server starting on port " + cfg.AppPort + "...")
 	if err := r.Run(":" + cfg.AppPort); err != nil {

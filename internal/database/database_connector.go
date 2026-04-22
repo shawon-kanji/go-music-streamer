@@ -25,9 +25,13 @@ func ConnectDBSources(cfg config.Config) (*DbClient, error) {
 			dbClient.clients["postgres"] = db
 			// Add more sources here as needed
 		default:
-			return nil, nil
+			// ignore unknown sources for now
 		}
 	}
-	return nil, nil
+	return dbClient, nil
 
+}
+
+func (c *DbClient) GetPostgres() interface{} {
+	return c.clients["postgres"]
 }

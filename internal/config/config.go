@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
@@ -22,32 +23,50 @@ type Config struct {
 	DBSources []string
 	AppPort   string
 	ENV       string
+	JWTSecret string `validate:"required"`
 }
 
+var (
+	instance Config
+	once     sync.Once
+	loadErr  error
+)
+
+// LoadConfig initializes the configuration singleton.
 func LoadConfig() (Config, error) {
-	_ = godotenv.Load()
+	once.Do(func() {
+		_ = godotenv.Load()
 
-	cfg := Config{
-		Postgres: PostgresDBConfig{
-			Host:     getEnvWithDefault("DB_HOST", "localhost"),
-			Port:     getEnvWithDefault("DB_PORT", "5432"),
-			User:     os.Getenv("DB_USER"),
-			Password: os.Getenv("DB_PASSWORD"),
-			Name:     os.Getenv("DB_NAME"),
-			SSLMode:  getEnvWithDefault("DB_SSLMODE", "disable"),
-		},
-		DBSources: []string{"postgres"}, // Add more sources here as needed
-		AppPort:   getEnvWithDefault("APP_PORT", "8080"),
-		ENV:       getEnvWithDefault("ENV", "development"),
-	}
+		cfg := Config{
+			Postgres: PostgresDBConfig{
+				Host:     getEnvWithDefault("DB_HOST", "localhost"),
+				Port:     getEnvWithDefault("DB_PORT", "5432"),
+				User:     os.Getenv("DB_USER"),
+				Password: os.Getenv("DB_PASSWORD"),
+				Name:     os.Getenv("DB_NAME"),
+				SSLMode:  getEnvWithDefault("DB_SSLMODE", "disable"),
+			},
+			DBSources: []string{"postgres"}, // Add more sources here as needed
+			AppPort:   getEnvWithDefault("APP_PORT", "8080"),
+			ENV:       getEnvWithDefault("ENV", "development"),
+			JWTSecret: getEnvWithDefault("JWT_SECRET", "super-secret-key-change-me"),
+		}
 
-	fmt.Printf("Loaded config: %+v\n", cfg)
+		if err := validator.New().Struct(cfg); err != nil {
+			loadErr = fmt.Errorf("config validation failed: %w", err)
+			return
+		}
 
-	if err := validator.New().Struct(cfg); err != nil {
-		return Config{}, fmt.Errorf("config validation failed: %w", err)
-	}
+		instance = cfg
+	})
 
-	return cfg, nil
+	return instance, loadErr
+}
+
+// GetConfig returns the initialized configuration singleton.
+// Safe to call anywhere without passing Config instances.
+func GetConfig() Config {
+	return instance
 }
 
 func getEnvWithDefault(key, fallback string) string {

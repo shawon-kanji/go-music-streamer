@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func New() *gin.Engine {
+func New(userHandler *handlers.UserHandler) *gin.Engine {
 	r := gin.Default()
 
 	// Fix: [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe.
@@ -14,7 +14,10 @@ func New() *gin.Engine {
 	r.SetTrustedProxies(nil)
 
 	r.GET("/health", handlers.Health)
-	r.POST("/signup", handlers.Signup)
+
+	// User routes
+	r.POST("/signup", userHandler.Signup)
+	r.POST("/login", userHandler.Login)
 
 	return r
 }
