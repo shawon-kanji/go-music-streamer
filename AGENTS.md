@@ -25,6 +25,10 @@ Use these standard commands provided by the Makefile:
 
 ## Project Conventions
 - **Routing & Handlers**: Define routes in `internal/api/router/`. Handlers should purely map requests to DTOs, invoke usecases, and format responses. Do not put business logic in handlers.
+- **Responses & Error Handling**:
+  - Always use `internal/framework` helpers (`framework.SendSuccess`, `framework.BadRequest`, etc.) to format JSON responses cleanly in handlers.
+  - Return errors from the usecase or repository layer using `internal/domain/apperror` (`apperror.New("CODE", "msg")`) to pass specific error codes up to the client.
+  - For struct validation errors, translate them using `framework.FormatValidationError(err)` before responding.
 - **Data parsing**: Always use the models in `internal/domain/dto` when parsing API payloads. Follow validation tags for strict boundary checks.
 - **Dependency Injection**: Services (repositories, usecases) are injected into handlers manually during server startup inside the router setup.
 

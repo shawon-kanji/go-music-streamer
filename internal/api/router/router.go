@@ -2,6 +2,8 @@ package router
 
 import (
 	"go-music-streamer/internal/api/handlers"
+	"go-music-streamer/internal/api/middleware"
+	"go-music-streamer/internal/domain/dto"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,9 +17,9 @@ func New(userHandler *handlers.UserHandler) *gin.Engine {
 
 	r.GET("/health", handlers.Health)
 
-	// User routes
-	r.POST("/signup", userHandler.Signup)
-	r.POST("/login", userHandler.Login)
+	// User routes with validation middleware
+	r.POST("/signup", middleware.ValidateJSON(dto.CreateUserRequest{}, "validatedRequest"), userHandler.Signup)
+	r.POST("/login", middleware.ValidateJSON(dto.LoginRequest{}, "validatedRequest"), userHandler.Login)
 
 	return r
 }
