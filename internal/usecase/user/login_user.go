@@ -1,10 +1,10 @@
 package user
 
 import (
-	"errors"
 	"time"
 
 	"go-music-streamer/internal/config"
+	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/dto"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -16,13 +16,13 @@ func (useCase *userUseCase) Login(req *dto.LoginRequest) (string, *dto.UserRespo
 	// Verify user exists via repo
 	userEntity, err := useCase.repo.GetUserByEmail(req.Email)
 	if err != nil { // Could be not found or other errors
-		return "", nil, errors.New("invalid email or password")
+		return "", nil, apperror.New(apperror.Unauthorized, "invalid email or password")
 	}
 
 	// Compare bcrypt password
 	err = bcrypt.CompareHashAndPassword([]byte(userEntity.Password), []byte(req.Password))
 	if err != nil {
-		return "", nil, errors.New("invalid email or password")
+		return "", nil, apperror.New(apperror.Unauthorized, "invalid email or password")
 	}
 
 	// Fetch singleton config directly
@@ -41,7 +41,7 @@ func (useCase *userUseCase) Login(req *dto.LoginRequest) (string, *dto.UserRespo
 
 	tokenString, err := token.SignedString([]byte(appConfig.JWTSecret))
 	if err != nil {
-		return "", nil, errors.New("could not generate token")
+		return "", nil, apperror.New(apperror.InternalError, "could not generate token")
 	}
 
 	// Return strictly safe UserResponse and Token
