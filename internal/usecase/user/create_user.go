@@ -1,6 +1,7 @@
 package user
 
 import (
+	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/dto"
 	"go-music-streamer/internal/domain/entity"
 	"go-music-streamer/internal/repository"
@@ -27,6 +28,13 @@ func NewUserUseCase(repo repository.UserRepository) UserUseCase {
 // CreateUser handles business logic mapping the incoming DTO to a domain entity
 // and delegating persistence to the repository layer.
 func (useCase *userUseCase) CreateUser(req *dto.CreateUserRequest) (*dto.UserResponse, error) {
+
+	//check if the user with the same email already exists
+	existingUser, err := useCase.repo.GetUserByEmail(req.Email)
+	if err == nil && existingUser != nil {
+		return nil, apperror.Newf("USER_ALREADY_EXISTS", "user with email %s already exists", req.Email)
+	}
+
 	// Hash the password using bcrypt
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {

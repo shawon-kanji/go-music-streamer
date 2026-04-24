@@ -1,7 +1,9 @@
 package postgres
 
+import "gorm.io/gorm"
+
 type User struct {
-	ID        uint       `gorm:"primaryKey"`
+	gorm.Model
 	Username  string     `gorm:"unique;not null"`
 	Email     string     `gorm:"unique;not null"`
 	Password  string     `gorm:"not null"`
@@ -9,21 +11,21 @@ type User struct {
 }
 
 type UserRole struct {
-	ID     uint `gorm:"primaryKey"`
+	gorm.Model
 	UserID uint `gorm:"not null"`
 	RoleID uint `gorm:"not null"`
 	Role   Role `gorm:"foreignKey:RoleID"`
 }
 
 type Role struct {
-	ID          uint             `gorm:"primaryKey"`
+	gorm.Model
 	Name        string           `gorm:"unique;not null"`
 	Permissions []RolePermission `gorm:"foreignKey:RoleID"`
 }
 
 // RolePermission ties a specific Action on a specific Resource to a Role
 type RolePermission struct {
-	ID         uint `gorm:"primaryKey"`
+	gorm.Model
 	RoleID     uint `gorm:"not null;uniqueIndex:idx_role_resource_action"`
 	ResourceID uint `gorm:"not null;uniqueIndex:idx_role_resource_action"`
 	ActionID   uint `gorm:"not null;uniqueIndex:idx_role_resource_action"`
@@ -34,11 +36,11 @@ type RolePermission struct {
 }
 
 type Resource struct {
-	ID   uint   `gorm:"primaryKey"`
+	gorm.Model
 	Name string `gorm:"unique;not null"`
 }
 
 type Action struct {
-	ID   uint   `gorm:"primaryKey"`
+	gorm.Model
 	Name string `gorm:"unique;not null"`
 }

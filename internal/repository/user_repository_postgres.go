@@ -41,7 +41,7 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 	var dbUser postgres.User
 
 	// Fetch from DB using GORM
-	if err := r.db.Where("email = ?", email).First(&dbUser).Error; err != nil {
+	if err := r.db.Where(map[string]interface{}{"email": email}).First(&dbUser).Error; err != nil {
 		return nil, err
 	}
 

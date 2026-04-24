@@ -3,6 +3,7 @@ package database
 import (
 	"go-music-streamer/internal/config"
 	"go-music-streamer/internal/database/postgres"
+	"log"
 )
 
 type DbClient struct {
@@ -23,6 +24,20 @@ func ConnectDBSources(cfg config.Config) (*DbClient, error) {
 				return nil, err
 			}
 			dbClient.clients["postgres"] = db
+			err = db.AutoMigrate(
+				&postgres.User{},
+				&postgres.Role{},
+				&postgres.UserRole{},
+				&postgres.Resource{},
+				&postgres.Action{},
+				&postgres.RolePermission{},
+			)
+
+			if err != nil {
+				log.Fatalf("Failed to apply database migrations: %v", err)
+			}
+
+			log.Println("Database schemas migrated successfully.")
 			// Add more sources here as needed
 		default:
 			// ignore unknown sources for now
