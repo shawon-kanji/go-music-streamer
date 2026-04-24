@@ -17,10 +17,10 @@ func FormatValidationError(err error) error {
 		for i, fe := range ve {
 			out[i] = getErrorMsg(fe)
 		}
-		appErr := apperror.New("DATA_VALIDATION_ERROR", "Validation failed")
+		appErr := apperror.New(apperror.DataValidationError, "Validation failed")
 		return appErr.WithErrors(out)
 	}
-	return apperror.New("DATA_VALIDATION_ERROR", err.Error())
+	return apperror.New(apperror.DataValidationError, err.Error())
 }
 
 func getErrorMsg(fe validator.FieldError) string {

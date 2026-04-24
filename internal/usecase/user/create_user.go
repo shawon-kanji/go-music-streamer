@@ -32,7 +32,7 @@ func (useCase *userUseCase) CreateUser(req *dto.CreateUserRequest) (*dto.UserRes
 	//check if the user with the same email already exists
 	existingUser, err := useCase.repo.GetUserByEmail(req.Email)
 	if err == nil && existingUser != nil {
-		return nil, apperror.Newf("USER_ALREADY_EXISTS", "user with email %s already exists", req.Email)
+		return nil, apperror.Newf(apperror.UserAlreadyExists, "user with email %s already exists", req.Email)
 	}
 
 	// Hash the password using bcrypt

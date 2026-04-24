@@ -25,7 +25,7 @@ func (h *UserHandler) Signup(c *gin.Context) {
 	// Retrieve the validated struct from the context set by the middleware
 	val, exists := c.Get("validatedRequest")
 	if !exists {
-		framework.InternalServerError(c, apperror.New("INTERNAL_ERROR", "validated data not found in context"))
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated data not found in context"))
 		return
 	}
 
@@ -45,7 +45,7 @@ func (h *UserHandler) Signup(c *gin.Context) {
 func (h *UserHandler) Login(c *gin.Context) {
 	val, exists := c.Get("validatedRequest")
 	if !exists {
-		framework.InternalServerError(c, apperror.New("INTERNAL_ERROR", "validated data not found in context"))
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated data not found in context"))
 		return
 	}
 

@@ -11,10 +11,10 @@ import (
 
 // ErrorResponse standardizes error API responses
 type ErrorResponse struct {
-	Success   bool        `json:"success"`
-	Message   string      `json:"message"`
-	ErrorCode string      `json:"errorCode,omitempty"`
-	Errors    interface{} `json:"errors,omitempty"`
+	Success   bool     `json:"success"`
+	Message   string   `json:"message"`
+	ErrorCode string   `json:"errorCode,omitempty"`
+	Errors    []string `json:"errors,omitempty"`
 }
 
 // SendError formats and sends an error JSON response
@@ -22,28 +22,32 @@ func SendError(c *gin.Context, statusCode int, message string, errs interface{})
 	fmt.Println("Error:", message, "Details:", errs) // Log the error details for debugging
 
 	errorCode := ""
+	var errorList []string
+
 	if err, ok := errs.(error); ok {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) {
-			errorCode = appErr.Code
+			errorCode = string(appErr.Code)
 			// If we want to hide the full error string and only show exactly the AppError message
 			message = appErr.Message
 			if len(appErr.Errors) > 0 {
-				errs = appErr.Errors // Provide the nested validation errors array
-			} else {
-				errs = nil // we already send the error code and message clearly
+				errorList = appErr.Errors // Provide the nested validation errors array
 			}
 		} else {
 			fmt.Println(err, ok)
-			errs = err.Error()
+			errorList = []string{err.Error()}
 		}
+	} else if errStringList, ok := errs.([]string); ok {
+		errorList = errStringList
+	} else if errString, ok := errs.(string); ok {
+		errorList = []string{errString}
 	}
 
 	c.JSON(statusCode, ErrorResponse{
 		Success:   false,
 		Message:   message,
 		ErrorCode: errorCode,
-		Errors:    errs,
+		Errors:    errorList,
 	})
 }
 
