@@ -63,3 +63,19 @@ func (h *UserHandler) Login(c *gin.Context) {
 		User:    *userResp,
 	})
 }
+
+// Profile returns the currently authenticated user's profile details.
+func (h *UserHandler) Profile(c *gin.Context) {
+	// The Authenticate middleware guarantees "userID" exists in the context
+	userID, exists := c.Get("userID")
+	if !exists {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "Identity missing from secure context"))
+		return
+	}
+
+	// For now, return a placeholder profile.
+	// You can later map this to h.useCase.GetUserByID(userID)
+	framework.SendSuccess(c, http.StatusOK, "User profile retrieved", gin.H{
+		"id": userID,
+	})
+}

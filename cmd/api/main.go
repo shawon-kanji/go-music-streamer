@@ -36,7 +36,7 @@ func main() {
 	userUseCase := user.NewUserUseCase(userRepo)
 	userHandler := handlers.NewUserHandler(userUseCase)
 
-	r := router.New(userHandler)
+	r := router.New(pgDB, userHandler)
 
 	log.Println("Server starting on port " + cfg.AppPort + "...")
 	if err := r.Run(":" + cfg.AppPort); err != nil {
