@@ -6,7 +6,7 @@ import (
 )
 
 type SongUseCase interface {
-	ListSongs() ([]*dto.SongResponse, error)
+	ListSongs(page int, limit int) (*dto.PaginatedSongResponse, error)
 }
 
 type songUseCase struct {
@@ -19,8 +19,15 @@ func NewSongUseCase(repo repository.SongRepository) SongUseCase {
 	}
 }
 
-func (useCase *songUseCase) ListSongs() ([]*dto.SongResponse, error) {
-	songEntities, err := useCase.repo.ListSongs()
+func (useCase *songUseCase) ListSongs(page int, limit int) (*dto.PaginatedSongResponse, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	songEntities, totalCount, err := useCase.repo.ListSongs(page, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -36,5 +43,15 @@ func (useCase *songUseCase) ListSongs() ([]*dto.SongResponse, error) {
 			URL:    song.Url,
 		})
 	}
-	return songResponses, nil
+
+	// Calculate if there are more
+	hasMore := int64(page*limit) < totalCount
+
+	return &dto.PaginatedSongResponse{
+		MediaList:  songResponses,
+		HasMore:    hasMore,
+		Page:       page,
+		Limit:      limit,
+		TotalCount: totalCount,
+	}, nil
 }
