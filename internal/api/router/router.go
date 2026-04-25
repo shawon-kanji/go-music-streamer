@@ -31,6 +31,7 @@ func New(db *gorm.DB, userHandler *handlers.UserHandler) *gin.Engine {
 	{
 		// Any authenticated user can check their profile
 		secureRoutes.GET("/me", userHandler.Profile)
+		secureRoutes.GET("/songs", handlers.NewSongHandler(nil).ListSongs) // Placeholder for SongHandler with actual use case
 
 		// Example: Only users with the explicit "READ" permission on "USER" resource can access this specific group.
 		adminRoutes := secureRoutes.Group("/admin")

@@ -8,6 +8,7 @@ type User struct {
 	Email     string     `gorm:"unique;not null"`
 	Password  string     `gorm:"not null"`
 	UserRoles []UserRole `gorm:"foreignKey:UserID"`
+	IsCreator bool       `gorm:"default:false"`
 }
 
 type UserRole struct {
@@ -15,6 +16,13 @@ type UserRole struct {
 	UserID uint `gorm:"not null"`
 	RoleID uint `gorm:"not null"`
 	Role   Role `gorm:"foreignKey:RoleID"`
+}
+
+type AdminRole struct {
+	gorm.Model
+	AdminID uint `gorm:"not null"`
+	RoleID  uint `gorm:"not null"`
+	Role    Role `gorm:"foreignKey:RoleID"`
 }
 
 type Role struct {
@@ -43,4 +51,45 @@ type Resource struct {
 type Action struct {
 	gorm.Model
 	Name string `gorm:"unique;not null"`
+}
+
+type Admin struct {
+	gorm.Model
+	Email    string `gorm:"unique;not null"`
+	Password string `gorm:"not null"`
+}
+
+type Playlist struct {
+	gorm.Model
+	Name        string `gorm:"not null"`
+	Visibility  string `gorm:"not null; default:'public'"` // e.g., "public", "private"
+	CreatedBy   uint   `gorm:"not null"`                   // UserID of the creator
+	UserDetails User   `gorm:"foreignKey:CreatedBy"`
+}
+
+type Song struct {
+	gorm.Model
+	Title     string `gorm:"not null"`
+	Artist    string `gorm:"not null"`
+	Album     string
+	Genre     string
+	Duration  uint   // Duration in seconds
+	Url       string `gorm:"not null"` // URL to the song file
+	LikeCount uint   `gorm:"default:0"`
+}
+
+type PlaylistSong struct {
+	gorm.Model
+	PlaylistID uint `gorm:"not null;uniqueIndex:idx_playlist_song"`
+	SongID     uint `gorm:"not null;uniqueIndex:idx_playlist_song"`
+
+	// Preload these to get song details when fetching playlist songs
+	Playlist Playlist `gorm:"foreignKey:PlaylistID"`
+	Song     Song     `gorm:"foreignKey:SongID"`
+}
+
+type UserLikedSong struct {
+	gorm.Model
+	UserID uint `gorm:"not null;uniqueIndex:idx_user_liked_song"`
+	SongID uint `gorm:"not null;uniqueIndex:idx_user_liked_song"`
 }

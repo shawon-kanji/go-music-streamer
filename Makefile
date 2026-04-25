@@ -9,6 +9,9 @@ docker-down:
 run:
 	go run cmd/api/main.go
 
+seed:
+	go run cmd/seed/main.go
+
 build:
 	go build -o bin/server cmd/api/main.go
 

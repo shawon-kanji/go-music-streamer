@@ -21,7 +21,7 @@ type ErrorResponse struct {
 func SendError(c *gin.Context, statusCode int, message string, errs interface{}) {
 	fmt.Println("Error:", message, "Details:", errs) // Log the error details for debugging
 
-	errorCode := ""
+	errorCode := "UNDEFINED_ERROR"
 	var errorList []string
 
 	if err, ok := errs.(error); ok {

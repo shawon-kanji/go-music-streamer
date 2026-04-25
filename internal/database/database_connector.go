@@ -26,11 +26,17 @@ func ConnectDBSources(cfg config.Config) (*DbClient, error) {
 			dbClient.clients["postgres"] = db
 			err = db.AutoMigrate(
 				&postgres.User{},
-				&postgres.Role{},
 				&postgres.UserRole{},
+				&postgres.Role{},
+				&postgres.RolePermission{},
 				&postgres.Resource{},
 				&postgres.Action{},
-				&postgres.RolePermission{},
+				&postgres.Admin{},
+				&postgres.Playlist{},
+				&postgres.Song{},
+				&postgres.PlaylistSong{},
+				&postgres.UserLikedSong{},
+				&postgres.AdminRole{},
 			)
 
 			if err != nil {
