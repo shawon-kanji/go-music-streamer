@@ -58,9 +58,8 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	framework.SendSuccess(c, http.StatusOK, "Login successful", dto.LoginResponse{
-		Message: "Login successful",
-		Token:   token,
-		User:    *userResp,
+		Token: token,
+		User:  *userResp,
 	})
 }
 

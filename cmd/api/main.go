@@ -3,12 +3,10 @@ package main
 import (
 	"log"
 
-	"go-music-streamer/internal/api/handlers"
 	"go-music-streamer/internal/api/router"
+	"go-music-streamer/internal/bootstrap"
 	"go-music-streamer/internal/config"
 	"go-music-streamer/internal/database"
-	"go-music-streamer/internal/repository"
-	"go-music-streamer/internal/usecase/user"
 
 	"gorm.io/gorm"
 )
@@ -32,11 +30,9 @@ func main() {
 	log.Println("Database connection established.")
 
 	// Wire dependencies: Repository -> UseCase -> Handler
-	userRepo := repository.NewUserRepository(pgDB)
-	userUseCase := user.NewUserUseCase(userRepo)
-	userHandler := handlers.NewUserHandler(userUseCase)
+	appHandlers := bootstrap.InitHandlers(pgDB)
 
-	r := router.New(pgDB, userHandler)
+	r := router.New(pgDB, appHandlers)
 
 	log.Println("Server starting on port " + cfg.AppPort + "...")
 	if err := r.Run(":" + cfg.AppPort); err != nil {

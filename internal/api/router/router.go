@@ -3,6 +3,7 @@ package router
 import (
 	"go-music-streamer/internal/api/handlers"
 	"go-music-streamer/internal/api/middleware"
+	"go-music-streamer/internal/bootstrap"
 	"go-music-streamer/internal/domain/dto"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +11,7 @@ import (
 )
 
 // New initializes the Gin application engine and configures all routing groups and middleware.
-func New(db *gorm.DB, userHandler *handlers.UserHandler) *gin.Engine {
+func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 	r := gin.Default()
 
 	// Fix: [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe.
@@ -21,8 +22,8 @@ func New(db *gorm.DB, userHandler *handlers.UserHandler) *gin.Engine {
 
 	publicUserRoutes := r.Group("/auth")
 	{
-		publicUserRoutes.POST("/signup", middleware.ValidateJSON(dto.CreateUserRequest{}, "validatedRequest"), userHandler.Signup)
-		publicUserRoutes.POST("/login", middleware.ValidateJSON(dto.LoginRequest{}, "validatedRequest"), userHandler.Login)
+		publicUserRoutes.POST("/signup", middleware.ValidateJSON(dto.CreateUserRequest{}, "validatedRequest"), appHandlers.UserHandler.Signup)
+		publicUserRoutes.POST("/login", middleware.ValidateJSON(dto.LoginRequest{}, "validatedRequest"), appHandlers.UserHandler.Login)
 	}
 
 	// Secured routes requiring JWT authentication
@@ -30,8 +31,8 @@ func New(db *gorm.DB, userHandler *handlers.UserHandler) *gin.Engine {
 	secureRoutes.Use(middleware.Authenticate())
 	{
 		// Any authenticated user can check their profile
-		secureRoutes.GET("/me", userHandler.Profile)
-		secureRoutes.GET("/songs", handlers.NewSongHandler(nil).ListSongs) // Placeholder for SongHandler with actual use case
+		secureRoutes.GET("/me", appHandlers.UserHandler.Profile)
+		secureRoutes.GET("/songs", appHandlers.SongHandler.ListSongs)
 
 		// Example: Only users with the explicit "READ" permission on "USER" resource can access this specific group.
 		adminRoutes := secureRoutes.Group("/admin")
