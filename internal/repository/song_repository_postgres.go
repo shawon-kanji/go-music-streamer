@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"errors"
+
 	"go-music-streamer/internal/database/postgres"
+	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/entity"
 
 	"gorm.io/gorm"
@@ -9,6 +12,7 @@ import (
 
 type SongRepository interface {
 	ListSongs(page int, limit int) ([]*entity.Song, int64, error)
+	GetSongByID(id uint) (*entity.Song, error)
 }
 
 type songRepository struct {
@@ -57,4 +61,27 @@ func (r *songRepository) ListSongs(page int, limit int) ([]*entity.Song, int64, 
 		})
 	}
 	return songEntities, totalCount, nil
+}
+
+func (r *songRepository) GetSongByID(id uint) (*entity.Song, error) {
+	var song postgres.Song
+	err := r.db.First(&song, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.New(apperror.NotFound, "song not found")
+		}
+		return nil, err
+	}
+
+	return &entity.Song{
+		ID:        song.ID,
+		Title:     song.Title,
+		Artist:    song.Artist,
+		Album:     song.Album,
+		Genre:     song.Genre,
+		Duration:  song.Duration,
+		Url:       song.Url,
+		LikeCount: song.LikeCount,
+		Thumbnail: song.Thumbnail,
+	}, nil
 }

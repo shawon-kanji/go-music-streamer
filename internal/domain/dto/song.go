@@ -24,3 +24,7 @@ type PaginatedSongResponse struct {
 	Limit      int             `json:"limit"`
 	TotalCount int64           `json:"total_count"`
 }
+
+type FetchSongRequest struct {
+	ID uint `uri:"id" binding:"required"`
+}

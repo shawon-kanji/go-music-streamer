@@ -33,6 +33,7 @@ func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 		// Any authenticated user can check their profile
 		secureRoutes.GET("/me", appHandlers.UserHandler.Profile)
 		secureRoutes.GET("/songs", appHandlers.SongHandler.ListSongs)
+		secureRoutes.GET("/songs/:id", appHandlers.SongHandler.FetchSong)
 
 		// Playlist routes
 		secureRoutes.POST("/playlists", middleware.ValidateJSON(dto.CreatePlaylistRequest{}, "validatedRequest"), appHandlers.PlaylistHandler.CreatePlaylist)

@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
+	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/dto"
 	"go-music-streamer/internal/framework"
 	"go-music-streamer/internal/usecase/song"
@@ -39,4 +41,25 @@ func (h *SongHandler) ListSongs(c *gin.Context) {
 	}
 
 	framework.SendSuccess(c, http.StatusOK, "Songs retrieved successfully", paginatedSongs)
+}
+
+func (h *SongHandler) FetchSong(c *gin.Context) {
+	var req dto.FetchSongRequest
+	if err := c.ShouldBindUri(&req); err != nil {
+		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
+		return
+	}
+
+	songRes, err := h.useCase.FetchSongByID(req.ID)
+	if err != nil {
+		var appErr *apperror.AppError
+		if errors.As(err, &appErr) && appErr.Code == apperror.NotFound {
+			framework.SendError(c, http.StatusNotFound, err.Error(), err)
+			return
+		}
+		framework.SendError(c, http.StatusInternalServerError, err.Error(), err)
+		return
+	}
+
+	framework.SendSuccess(c, http.StatusOK, "Song retrieved successfully", songRes)
 }
