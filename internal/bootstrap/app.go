@@ -12,16 +12,16 @@ import (
 
 // AppHandlers struct acts as a container for all HTTP handlers
 type AppHandlers struct {
-	UserSignupHandler       *handlers.UserSignupHandler
-	UserLoginHandler        *handlers.UserLoginHandler
-	UserProfileHandler      *handlers.UserProfileHandler
+	UserSignupHandler  *handlers.UserSignupHandler
+	UserLoginHandler   *handlers.UserLoginHandler
+	UserProfileHandler *handlers.UserProfileHandler
 
-	ListSongsHandler        *handlers.ListSongsHandler
-	FetchSongHandler        *handlers.FetchSongHandler
+	ListSongsHandler *handlers.ListSongsHandler
+	FetchSongHandler *handlers.FetchSongHandler
 
-	CreatePlaylistHandler   *handlers.CreatePlaylistHandler
-	FetchPlaylistsHandler   *handlers.FetchPlaylistsHandler
-	FetchPlaylistHandler    *handlers.FetchPlaylistHandler
+	CreatePlaylistHandler    *handlers.CreatePlaylistHandler
+	FetchPlaylistsHandler    *handlers.FetchPlaylistsHandler
+	FetchPlaylistHandler     *handlers.FetchPlaylistHandler
 	AddSongToPlaylistHandler *handlers.AddSongToPlaylistHandler
 }
 

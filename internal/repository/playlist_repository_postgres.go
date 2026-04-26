@@ -2,6 +2,7 @@ package repository
 
 import (
 	"go-music-streamer/internal/database/postgres"
+	"go-music-streamer/internal/domain/dto"
 	"go-music-streamer/internal/domain/entity"
 
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ type PlaylistRepository interface {
 	GetPlaylistByID(id uint) (*entity.Playlist, error)
 	UpdatePlaylist(playlist *entity.Playlist) (entity.Playlist, error)
 	DeletePlaylist(id uint) error
-	ListPlaylists(page int, limit int) ([]*entity.Playlist, int64, error)
+	ListPlaylists(page int, limit int, options dto.PlaylistQueryOptions) ([]*entity.Playlist, int64, error)
 	AddSongToPlaylist(playlistID uint, songID uint) error
 }
 
@@ -102,7 +103,7 @@ func (r *playlistRepository) DeletePlaylist(id uint) error {
 	return r.db.Delete(&postgres.Playlist{}, id).Error
 }
 
-func (r *playlistRepository) ListPlaylists(page int, limit int) ([]*entity.Playlist, int64, error) {
+func (r *playlistRepository) ListPlaylists(page int, limit int, options dto.PlaylistQueryOptions) ([]*entity.Playlist, int64, error) {
 	var playlists []*postgres.Playlist
 	var totalCount int64
 
@@ -115,13 +116,21 @@ func (r *playlistRepository) ListPlaylists(page int, limit int) ([]*entity.Playl
 
 	offset := (page - 1) * limit
 
+	// Grouping the OR condition ensures that if future AND conditions
+	// (or automatic soft-delete scopes) are appended, the precedence remains correct.
+	baseQuery := r.db.Model(&postgres.Playlist{}).
+		Where(
+			r.db.Where("visibility = ?", "public").
+				Or("created_by = ?", options.UserID),
+		)
+
 	// Get total count of playlists
-	if err := r.db.Model(&postgres.Playlist{}).Count(&totalCount).Error; err != nil {
+	if err := baseQuery.Count(&totalCount).Error; err != nil {
 		return nil, 0, err
 	}
 
 	// Get paginated playlists
-	if err := r.db.Preload("UserDetails").Limit(limit).Offset(offset).Find(&playlists).Error; err != nil {
+	if err := baseQuery.Preload("UserDetails").Limit(limit).Offset(offset).Find(&playlists).Error; err != nil {
 		return nil, 0, err
 	}
 	var playlistEntities []*entity.Playlist

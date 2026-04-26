@@ -56,3 +56,8 @@ type PaginatedPlaylistResponse struct {
 	Limit        int                 `json:"limit"`
 	TotalCount   int64               `json:"total_count"`
 }
+
+type PlaylistQueryOptions struct {
+	UserID     uint
+	extraField string // Placeholder for any additional query options in the future
+}

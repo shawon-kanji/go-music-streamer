@@ -45,7 +45,7 @@ func (h *CreatePlaylistHandler) Handle(c *gin.Context) {
 }
 
 type fetchPlaylistsUseCase interface {
-	FetchPlaylists(page int, limit int) (*dto.PaginatedPlaylistResponse, error)
+	FetchPlaylists(page int, limit int, options dto.PlaylistQueryOptions) (*dto.PaginatedPlaylistResponse, error)
 }
 
 type FetchPlaylistsHandler struct {
@@ -70,7 +70,9 @@ func (h *FetchPlaylistsHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	res, err := h.uc.FetchPlaylists(req.Page, req.Limit)
+	res, err := h.uc.FetchPlaylists(req.Page, req.Limit, dto.PlaylistQueryOptions{
+		UserID: c.MustGet("userID").(uint),
+	})
 	if err != nil {
 		framework.InternalServerError(c, err)
 		return
