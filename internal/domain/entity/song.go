@@ -9,4 +9,5 @@ type Song struct {
 	Url       string
 	Genre     string
 	LikeCount uint
+	Thumbnail string
 }

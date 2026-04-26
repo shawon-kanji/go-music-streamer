@@ -45,7 +45,6 @@ func main() {
 		&postgres.Admin{},
 		&postgres.Playlist{},
 		&postgres.Song{},
-		&postgres.PlaylistSong{},
 		&postgres.UserLikedSong{},
 		&postgres.AdminRole{},
 	)
@@ -162,11 +161,7 @@ func main() {
 
 	log.Println("Associating Songs to Playlist...")
 	for _, song := range songs {
-		plSong := postgres.PlaylistSong{
-			PlaylistID: playlist.ID,
-			SongID:     song.ID,
-		}
-		pgDB.Where(postgres.PlaylistSong{PlaylistID: playlist.ID, SongID: song.ID}).FirstOrCreate(&plSong)
+		pgDB.Model(&playlist).Association("Songs").Append(&song)
 	}
 
 	log.Println("Database seeding completed successfully.")

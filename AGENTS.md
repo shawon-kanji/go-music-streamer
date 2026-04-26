@@ -10,7 +10,9 @@
 ## Architecture Overview
 The project follows a standard Clean Architecture / Layered pattern approach in Go:
 - [cmd/api/main.go](cmd/api/main.go): Application entrypoint.
+- [cmd/seed/main.go](cmd/seed/main.go): Database seeding utility.
 - `internal/api/handlers/`: HTTP request handlers and controllers.
+- `internal/bootstrap/`: Dependency Injection setup and application wiring (`AppHandlers`).
 - `internal/usecase/`: Pure business logic bridging handlers and repositories.
 - `internal/repository/`: Data layer, managing interactions with Postgres.
 - `internal/domain/`: Core entities (models) and DTOs (Data Transfer Objects).
@@ -30,7 +32,7 @@ Use these standard commands provided by the Makefile:
   - Return errors from the usecase or repository layer using `internal/domain/apperror` (`apperror.New("CODE", "msg")`) to pass specific error codes up to the client.
   - For struct validation errors, translate them using `framework.FormatValidationError(err)` before responding.
 - **Data parsing**: Always use the models in `internal/domain/dto` when parsing API payloads. Follow validation tags for strict boundary checks.
-- **Dependency Injection**: Services (repositories, usecases) are injected into handlers manually during server startup inside the router setup.
+- **Dependency Injection**: Services (repositories, usecases) are initialized and injected into handlers inside the `internal/bootstrap/app.go` container. This `AppHandlers` registry is then passed to the router instance. Do not pollute `main.go` with handler instantiation.
 
 ## Documentation
 - **Roadmap & Goals**: Read [agent.md](agent.md) for the active phase and feature roadmap.

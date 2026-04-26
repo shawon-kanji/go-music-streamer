@@ -35,12 +35,15 @@ func (useCase *songUseCase) ListSongs(page int, limit int) (*dto.PaginatedSongRe
 	var songResponses []*dto.SongResponse
 	for _, song := range songEntities {
 		songResponses = append(songResponses, &dto.SongResponse{
-			ID:     song.ID,
-			Title:  song.Title,
-			Artist: song.Artist,
-			Album:  song.Album,
-			Genre:  song.Genre,
-			URL:    song.Url,
+			ID:        song.ID,
+			Title:     song.Title,
+			Artist:    song.Artist,
+			Album:     song.Album,
+			Genre:     song.Genre,
+			URL:       song.Url,
+			Duration:  song.Duration,
+			LikeCount: song.LikeCount,
+			Thumbnail: song.Thumbnail,
 		})
 	}
 

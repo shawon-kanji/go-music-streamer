@@ -53,6 +53,7 @@ func (r *songRepository) ListSongs(page int, limit int) ([]*entity.Song, int64, 
 			Duration:  song.Duration,
 			Url:       song.Url,
 			LikeCount: song.LikeCount,
+			Thumbnail: song.Thumbnail,
 		})
 	}
 	return songEntities, totalCount, nil

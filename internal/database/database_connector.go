@@ -34,7 +34,6 @@ func ConnectDBSources(cfg config.Config) (*DbClient, error) {
 				&postgres.Admin{},
 				&postgres.Playlist{},
 				&postgres.Song{},
-				&postgres.PlaylistSong{},
 				&postgres.UserLikedSong{},
 				&postgres.AdminRole{},
 			)

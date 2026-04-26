@@ -34,6 +34,11 @@ func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 		secureRoutes.GET("/me", appHandlers.UserHandler.Profile)
 		secureRoutes.GET("/songs", appHandlers.SongHandler.ListSongs)
 
+		// Playlist routes
+		secureRoutes.POST("/playlists", middleware.ValidateJSON(dto.CreatePlaylistRequest{}, "validatedRequest"), appHandlers.PlaylistHandler.CreatePlaylist)
+		secureRoutes.GET("/playlists", appHandlers.PlaylistHandler.FetchPlaylists)
+		secureRoutes.POST("/playlists/:id/songs", middleware.ValidateJSON(dto.AddSongToPlaylistRequest{}, "validatedRequest"), appHandlers.PlaylistHandler.AddSong)
+
 		// Example: Only users with the explicit "READ" permission on "USER" resource can access this specific group.
 		adminRoutes := secureRoutes.Group("/admin")
 		adminRoutes.Use(middleware.Authorize(db, "USER", "READ"))

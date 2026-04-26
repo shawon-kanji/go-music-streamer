@@ -62,9 +62,12 @@ type Admin struct {
 type Playlist struct {
 	gorm.Model
 	Name        string `gorm:"not null"`
+	Description string `gorm:"type:text"`
 	Visibility  string `gorm:"not null; default:'public'"` // e.g., "public", "private"
 	CreatedBy   uint   `gorm:"not null"`                   // UserID of the creator
 	UserDetails User   `gorm:"foreignKey:CreatedBy"`
+	Thumbnail   string // URL to playlist thumbnail image
+	Songs       []Song `gorm:"many2many:playlist_songs;"`
 }
 
 type Song struct {
@@ -76,16 +79,7 @@ type Song struct {
 	Duration  uint   // Duration in seconds
 	Url       string `gorm:"not null"` // URL to the song file
 	LikeCount uint   `gorm:"default:0"`
-}
-
-type PlaylistSong struct {
-	gorm.Model
-	PlaylistID uint `gorm:"not null;uniqueIndex:idx_playlist_song"`
-	SongID     uint `gorm:"not null;uniqueIndex:idx_playlist_song"`
-
-	// Preload these to get song details when fetching playlist songs
-	Playlist Playlist `gorm:"foreignKey:PlaylistID"`
-	Song     Song     `gorm:"foreignKey:SongID"`
+	Thumbnail string // URL to song thumbnail image
 }
 
 type UserLikedSong struct {

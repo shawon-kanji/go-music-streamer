@@ -14,6 +14,7 @@ type SongResponse struct {
 	URL       string `json:"url"`
 	LikeCount uint   `json:"like_count"`
 	Genre     string `json:"genre"`
+	Thumbnail string `json:"thumbnail"`
 }
 
 type PaginatedSongResponse struct {

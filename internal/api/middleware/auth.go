@@ -63,8 +63,22 @@ func Authenticate() gin.HandlerFunc {
 			return
 		}
 
+		var uid uint
+		switch v := userID.(type) {
+		case float64:
+			uid = uint(v)
+		case int:
+			uid = uint(v)
+		case uint:
+			uid = v
+		default:
+			framework.Unauthorized(c, apperror.New(apperror.Unauthorized, "invalid user identity format"))
+			c.Abort()
+			return
+		}
+
 		// Store the userID directly for the Authorize middleware and downstream handlers
-		c.Set("userID", userID)
+		c.Set("userID", uid)
 		c.Next()
 	}
 }
