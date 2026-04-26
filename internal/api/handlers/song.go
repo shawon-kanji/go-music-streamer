@@ -7,23 +7,23 @@ import (
 	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/dto"
 	"go-music-streamer/internal/framework"
-	"go-music-streamer/internal/usecase/song"
 
 	"github.com/gin-gonic/gin"
 )
 
-type SongHandler struct {
-	useCase song.SongUseCase
+type listSongsUseCase interface {
+	ListSongs(page int, limit int) (*dto.PaginatedSongResponse, error)
 }
 
-func NewSongHandler(userCase song.SongUseCase) *SongHandler {
-	return &SongHandler{
-		useCase: userCase,
-	}
+type ListSongsHandler struct {
+	uc listSongsUseCase
 }
 
-func (h *SongHandler) ListSongs(c *gin.Context) {
-	// Initialize with defaults before binding
+func NewListSongsHandler(uc listSongsUseCase) *ListSongsHandler {
+	return &ListSongsHandler{uc: uc}
+}
+
+func (h *ListSongsHandler) Handle(c *gin.Context) {
 	req := dto.ListSongsRequest{
 		Page:  1,
 		Limit: 10,
@@ -34,7 +34,7 @@ func (h *SongHandler) ListSongs(c *gin.Context) {
 		return
 	}
 
-	paginatedSongs, err := h.useCase.ListSongs(req.Page, req.Limit)
+	paginatedSongs, err := h.uc.ListSongs(req.Page, req.Limit)
 	if err != nil {
 		framework.InternalServerError(c, err)
 		return
@@ -43,14 +43,26 @@ func (h *SongHandler) ListSongs(c *gin.Context) {
 	framework.SendSuccess(c, http.StatusOK, "Songs retrieved successfully", paginatedSongs)
 }
 
-func (h *SongHandler) FetchSong(c *gin.Context) {
+type fetchSongUseCase interface {
+	FetchSongByID(id uint) (*dto.SongResponse, error)
+}
+
+type FetchSongHandler struct {
+	uc fetchSongUseCase
+}
+
+func NewFetchSongHandler(uc fetchSongUseCase) *FetchSongHandler {
+	return &FetchSongHandler{uc: uc}
+}
+
+func (h *FetchSongHandler) Handle(c *gin.Context) {
 	var req dto.FetchSongRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
 		return
 	}
 
-	songRes, err := h.useCase.FetchSongByID(req.ID)
+	songRes, err := h.uc.FetchSongByID(req.ID)
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) && appErr.Code == apperror.NotFound {

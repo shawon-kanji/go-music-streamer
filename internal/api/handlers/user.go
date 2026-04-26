@@ -6,23 +6,23 @@ import (
 	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/dto"
 	"go-music-streamer/internal/framework"
-	"go-music-streamer/internal/usecase/user" // Assuming package is renamed to user
 
 	"github.com/gin-gonic/gin"
 )
 
-type UserHandler struct {
-	useCase user.UserUseCase
+type createUserUseCase interface {
+	CreateUser(req *dto.CreateUserRequest) (*dto.UserResponse, error)
 }
 
-func NewUserHandler(useCase user.UserUseCase) *UserHandler {
-	return &UserHandler{
-		useCase: useCase,
-	}
+type UserSignupHandler struct {
+	uc createUserUseCase
 }
 
-func (h *UserHandler) Signup(c *gin.Context) {
-	// Retrieve the validated struct from the context set by the middleware
+func NewUserSignupHandler(uc createUserUseCase) *UserSignupHandler {
+	return &UserSignupHandler{uc: uc}
+}
+
+func (h *UserSignupHandler) Handle(c *gin.Context) {
 	val, exists := c.Get("validatedRequest")
 	if !exists {
 		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated data not found in context"))
@@ -31,8 +31,7 @@ func (h *UserHandler) Signup(c *gin.Context) {
 
 	createReq := val.(*dto.CreateUserRequest)
 
-	// Execute UseCase (which now inherently returns the sanitized Response DTO)
-	userResp, err := h.useCase.CreateUser(createReq)
+	userResp, err := h.uc.CreateUser(createReq)
 	if err != nil {
 		framework.BadRequest(c, err)
 		return
@@ -41,8 +40,19 @@ func (h *UserHandler) Signup(c *gin.Context) {
 	framework.SendSuccess(c, http.StatusCreated, "User created successfully", userResp)
 }
 
-// Login handler parsing credentials and returning the Token securely via the UseCase layer
-func (h *UserHandler) Login(c *gin.Context) {
+type loginUserUseCase interface {
+	Login(req *dto.LoginRequest) (string, *dto.UserResponse, error)
+}
+
+type UserLoginHandler struct {
+	uc loginUserUseCase
+}
+
+func NewUserLoginHandler(uc loginUserUseCase) *UserLoginHandler {
+	return &UserLoginHandler{uc: uc}
+}
+
+func (h *UserLoginHandler) Handle(c *gin.Context) {
 	val, exists := c.Get("validatedRequest")
 	if !exists {
 		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated data not found in context"))
@@ -51,7 +61,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	loginReq := val.(*dto.LoginRequest)
 
-	token, userResp, err := h.useCase.Login(loginReq)
+	token, userResp, err := h.uc.Login(loginReq)
 	if err != nil {
 		framework.Unauthorized(c, err)
 		return
@@ -63,17 +73,22 @@ func (h *UserHandler) Login(c *gin.Context) {
 	})
 }
 
-// Profile returns the currently authenticated user's profile details.
-func (h *UserHandler) Profile(c *gin.Context) {
-	// The Authenticate middleware guarantees "userID" exists in the context
+// UserProfileHandler doesn't even need a usecase right now since it just returns the userID,
+// but we'll create the structure for consistency.
+type UserProfileHandler struct {
+}
+
+func NewUserProfileHandler() *UserProfileHandler {
+	return &UserProfileHandler{}
+}
+
+func (h *UserProfileHandler) Handle(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		framework.InternalServerError(c, apperror.New(apperror.InternalError, "Identity missing from secure context"))
 		return
 	}
 
-	// For now, return a placeholder profile.
-	// You can later map this to h.useCase.GetUserByID(userID)
 	framework.SendSuccess(c, http.StatusOK, "User profile retrieved", gin.H{
 		"id": userID,
 	})

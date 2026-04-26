@@ -7,31 +7,23 @@ import (
 
 	"go-music-streamer/internal/domain/dto"
 	"go-music-streamer/internal/framework"
-	"go-music-streamer/internal/usecase/playlist"
 
 	"github.com/gin-gonic/gin"
 )
 
-type PlaylistHandler struct {
-	createPlaylist    playlist.CreatePlaylist
-	fetchPlaylists    playlist.FetchPlaylists
-	addSongToPlaylist playlist.AddSongToPlaylist
+type createPlaylistUseCase interface {
+	CreatePlaylist(req *dto.CreatePlaylistRequest) (*dto.PlaylistResponse, error)
 }
 
-func NewPlaylistHandler(
-	cp playlist.CreatePlaylist,
-	fp playlist.FetchPlaylists,
-	as playlist.AddSongToPlaylist,
-) *PlaylistHandler {
-	return &PlaylistHandler{
-		createPlaylist:    cp,
-		fetchPlaylists:    fp,
-		addSongToPlaylist: as,
-	}
+type CreatePlaylistHandler struct {
+	uc createPlaylistUseCase
 }
 
-// CreatePlaylist generates a new playlist for the logged-in user
-func (h *PlaylistHandler) CreatePlaylist(c *gin.Context) {
+func NewCreatePlaylistHandler(uc createPlaylistUseCase) *CreatePlaylistHandler {
+	return &CreatePlaylistHandler{uc: uc}
+}
+
+func (h *CreatePlaylistHandler) Handle(c *gin.Context) {
 	var req dto.CreatePlaylistRequest
 
 	val, exists := c.Get("validatedRequest")
@@ -43,7 +35,7 @@ func (h *PlaylistHandler) CreatePlaylist(c *gin.Context) {
 	}
 	req.CreatedBy = c.MustGet("userID").(uint) // Override with authenticated user ID from context
 
-	res, err := h.createPlaylist.CreatePlaylist(&req)
+	res, err := h.uc.CreatePlaylist(&req)
 	if err != nil {
 		framework.InternalServerError(c, err)
 		return
@@ -52,8 +44,19 @@ func (h *PlaylistHandler) CreatePlaylist(c *gin.Context) {
 	framework.SendSuccess(c, http.StatusCreated, "Playlist created successfully", res)
 }
 
-// FetchPlaylists retrieves paginated playlists
-func (h *PlaylistHandler) FetchPlaylists(c *gin.Context) {
+type fetchPlaylistsUseCase interface {
+	FetchPlaylists(page int, limit int) (*dto.PaginatedPlaylistResponse, error)
+}
+
+type FetchPlaylistsHandler struct {
+	uc fetchPlaylistsUseCase
+}
+
+func NewFetchPlaylistsHandler(uc fetchPlaylistsUseCase) *FetchPlaylistsHandler {
+	return &FetchPlaylistsHandler{uc: uc}
+}
+
+func (h *FetchPlaylistsHandler) Handle(c *gin.Context) {
 	req := struct {
 		Page  int `form:"page" binding:"omitempty,min=1"`
 		Limit int `form:"limit" binding:"omitempty,min=1,max=100"`
@@ -67,7 +70,7 @@ func (h *PlaylistHandler) FetchPlaylists(c *gin.Context) {
 		return
 	}
 
-	res, err := h.fetchPlaylists.FetchPlaylists(req.Page, req.Limit)
+	res, err := h.uc.FetchPlaylists(req.Page, req.Limit)
 	if err != nil {
 		framework.InternalServerError(c, err)
 		return
@@ -76,8 +79,19 @@ func (h *PlaylistHandler) FetchPlaylists(c *gin.Context) {
 	framework.SendSuccess(c, http.StatusOK, "Playlists fetched successfully", res)
 }
 
-// AddSong adds a single song to a specified playlist via path
-func (h *PlaylistHandler) AddSong(c *gin.Context) {
+type addSongToPlaylistUseCase interface {
+	AddSong(playlistID uint, req *dto.AddSongToPlaylistRequest) error
+}
+
+type AddSongToPlaylistHandler struct {
+	uc addSongToPlaylistUseCase
+}
+
+func NewAddSongToPlaylistHandler(uc addSongToPlaylistUseCase) *AddSongToPlaylistHandler {
+	return &AddSongToPlaylistHandler{uc: uc}
+}
+
+func (h *AddSongToPlaylistHandler) Handle(c *gin.Context) {
 	playlistIDStr := c.Param("id")
 	playlistID, err := strconv.ParseUint(playlistIDStr, 10, 32)
 	if err != nil {
@@ -94,11 +108,40 @@ func (h *PlaylistHandler) AddSong(c *gin.Context) {
 		return
 	}
 
-	err = h.addSongToPlaylist.AddSong(uint(playlistID), &req)
+	err = h.uc.AddSong(uint(playlistID), &req)
 	if err != nil {
 		framework.InternalServerError(c, err)
 		return
 	}
 
 	framework.SendSuccess(c, http.StatusOK, "Song added to playlist successfully", nil)
+}
+
+type fetchPlaylistUseCase interface {
+	FetchPlaylist(id uint) (*dto.PlaylistResponse, error)
+}
+
+type FetchPlaylistHandler struct {
+	uc fetchPlaylistUseCase
+}
+
+func NewFetchPlaylistHandler(uc fetchPlaylistUseCase) *FetchPlaylistHandler {
+	return &FetchPlaylistHandler{uc: uc}
+}
+
+func (h *FetchPlaylistHandler) Handle(c *gin.Context) {
+	playlistIDStr := c.Param("id")
+	playlistID, err := strconv.ParseUint(playlistIDStr, 10, 32)
+	if err != nil {
+		framework.BadRequest(c, fmt.Errorf("invalid playlist ID"))
+		return
+	}
+
+	res, err := h.uc.FetchPlaylist(uint(playlistID))
+	if err != nil {
+		framework.SendError(c, http.StatusInternalServerError, err.Error(), err)
+		return
+	}
+
+	framework.SendSuccess(c, http.StatusOK, "Playlist fetched successfully", res)
 }

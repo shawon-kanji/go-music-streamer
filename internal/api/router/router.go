@@ -22,8 +22,8 @@ func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 
 	publicUserRoutes := r.Group("/auth")
 	{
-		publicUserRoutes.POST("/signup", middleware.ValidateJSON(dto.CreateUserRequest{}, "validatedRequest"), appHandlers.UserHandler.Signup)
-		publicUserRoutes.POST("/login", middleware.ValidateJSON(dto.LoginRequest{}, "validatedRequest"), appHandlers.UserHandler.Login)
+		publicUserRoutes.POST("/signup", middleware.ValidateJSON(dto.CreateUserRequest{}, "validatedRequest"), appHandlers.UserSignupHandler.Handle)
+		publicUserRoutes.POST("/login", middleware.ValidateJSON(dto.LoginRequest{}, "validatedRequest"), appHandlers.UserLoginHandler.Handle)
 	}
 
 	// Secured routes requiring JWT authentication
@@ -31,14 +31,15 @@ func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 	secureRoutes.Use(middleware.Authenticate())
 	{
 		// Any authenticated user can check their profile
-		secureRoutes.GET("/me", appHandlers.UserHandler.Profile)
-		secureRoutes.GET("/songs", appHandlers.SongHandler.ListSongs)
-		secureRoutes.GET("/songs/:id", appHandlers.SongHandler.FetchSong)
+		secureRoutes.GET("/me", appHandlers.UserProfileHandler.Handle)
+		secureRoutes.GET("/songs", appHandlers.ListSongsHandler.Handle)
+		secureRoutes.GET("/songs/:id", appHandlers.FetchSongHandler.Handle)
 
 		// Playlist routes
-		secureRoutes.POST("/playlists", middleware.ValidateJSON(dto.CreatePlaylistRequest{}, "validatedRequest"), appHandlers.PlaylistHandler.CreatePlaylist)
-		secureRoutes.GET("/playlists", appHandlers.PlaylistHandler.FetchPlaylists)
-		secureRoutes.POST("/playlists/:id/songs", middleware.ValidateJSON(dto.AddSongToPlaylistRequest{}, "validatedRequest"), appHandlers.PlaylistHandler.AddSong)
+		secureRoutes.POST("/playlists", middleware.ValidateJSON(dto.CreatePlaylistRequest{}, "validatedRequest"), appHandlers.CreatePlaylistHandler.Handle)
+		secureRoutes.GET("/playlists", appHandlers.FetchPlaylistsHandler.Handle)
+		secureRoutes.GET("/playlists/:id", appHandlers.FetchPlaylistHandler.Handle)
+		secureRoutes.POST("/playlists/:id/songs", middleware.ValidateJSON(dto.AddSongToPlaylistRequest{}, "validatedRequest"), appHandlers.AddSongToPlaylistHandler.Handle)
 
 		// Example: Only users with the explicit "READ" permission on "USER" resource can access this specific group.
 		adminRoutes := secureRoutes.Group("/admin")
