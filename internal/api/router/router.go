@@ -34,9 +34,11 @@ func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 		secureRoutes.GET("/me", appHandlers.UserProfileHandler.Handle)
 		secureRoutes.GET("/songs", appHandlers.ListSongsHandler.Handle)
 		secureRoutes.GET("/songs/:id", appHandlers.FetchSongHandler.Handle)
+		secureRoutes.PATCH("/songs/:id", middleware.ValidateJSON(dto.UpdateSongRequest{}, "validatedRequest"), appHandlers.UpdateSongHandler.Handle)
 
 		// Playlist routes
 		secureRoutes.POST("/playlists", middleware.ValidateJSON(dto.CreatePlaylistRequest{}, "validatedRequest"), appHandlers.CreatePlaylistHandler.Handle)
+		secureRoutes.PATCH("/playlists/:id", middleware.ValidateJSON(dto.UpdatePlaylistRequest{}, "validatedRequest"), appHandlers.UpdatePlaylistHandler.Handle)
 		secureRoutes.GET("/playlists", appHandlers.FetchPlaylistsHandler.Handle)
 		secureRoutes.GET("/playlists/:id", appHandlers.FetchPlaylistHandler.Handle)
 		secureRoutes.POST("/playlists/:id/songs", middleware.ValidateJSON(dto.AddSongToPlaylistRequest{}, "validatedRequest"), appHandlers.AddSongToPlaylistHandler.Handle)

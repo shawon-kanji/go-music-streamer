@@ -13,6 +13,7 @@ import (
 type SongRepository interface {
 	ListSongs(page int, limit int) ([]*entity.Song, int64, error)
 	GetSongByID(id uint) (*entity.Song, error)
+	UpdateSong(song *entity.Song) (*entity.Song, error)
 }
 
 type songRepository struct {
@@ -83,5 +84,39 @@ func (r *songRepository) GetSongByID(id uint) (*entity.Song, error) {
 		Url:       song.Url,
 		LikeCount: song.LikeCount,
 		Thumbnail: song.Thumbnail,
+	}, nil
+}
+
+func (r *songRepository) UpdateSong(song *entity.Song) (*entity.Song, error) {
+	var songModel postgres.Song
+	if err := r.db.First(&songModel, song.ID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.New(apperror.NotFound, "song not found")
+		}
+		return nil, err
+	}
+
+	songModel.Title = song.Title
+	songModel.Artist = song.Artist
+	songModel.Album = song.Album
+	songModel.Genre = song.Genre
+	songModel.Duration = song.Duration
+	songModel.Url = song.Url
+	songModel.Thumbnail = song.Thumbnail
+
+	if err := r.db.Save(&songModel).Error; err != nil {
+		return nil, err
+	}
+
+	return &entity.Song{
+		ID:        songModel.ID,
+		Title:     songModel.Title,
+		Artist:    songModel.Artist,
+		Album:     songModel.Album,
+		Genre:     songModel.Genre,
+		Duration:  songModel.Duration,
+		Url:       songModel.Url,
+		LikeCount: songModel.LikeCount,
+		Thumbnail: songModel.Thumbnail,
 	}, nil
 }

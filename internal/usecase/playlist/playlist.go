@@ -6,8 +6,9 @@ import (
 )
 
 type UseCase interface {
-	AddSong(playlistID uint, req *dto.AddSongToPlaylistRequest) error
+	AddSong(playlistID uint, userID uint, req *dto.AddSongToPlaylistRequest) error
 	CreatePlaylist(req *dto.CreatePlaylistRequest) (*dto.PlaylistResponse, error)
+	UpdatePlaylist(playlistID uint, userID uint, req *dto.UpdatePlaylistRequest) (*dto.PlaylistResponse, error)
 	FetchPlaylist(id uint) (*dto.PlaylistResponse, error)
 	FetchPlaylists(page int, limit int, options dto.PlaylistQueryOptions) (*dto.PaginatedPlaylistResponse, error)
 }

@@ -28,3 +28,13 @@ type PaginatedSongResponse struct {
 type FetchSongRequest struct {
 	ID uint `uri:"id" binding:"required"`
 }
+
+type UpdateSongRequest struct {
+	Title     *string `json:"title" binding:"omitempty"`
+	Artist    *string `json:"artist" binding:"omitempty"`
+	Album     *string `json:"album" binding:"omitempty"`
+	Duration  *uint   `json:"duration" binding:"omitempty"`
+	URL       *string `json:"url" binding:"omitempty"`
+	Genre     *string `json:"genre" binding:"omitempty"`
+	Thumbnail *string `json:"thumbnail" binding:"omitempty"`
+}

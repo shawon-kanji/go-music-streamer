@@ -75,3 +75,45 @@ func (h *FetchSongHandler) Handle(c *gin.Context) {
 
 	framework.SendSuccess(c, http.StatusOK, "Song retrieved successfully", songRes)
 }
+
+type updateSongUseCase interface {
+	UpdateSong(id uint, req *dto.UpdateSongRequest) (*dto.SongResponse, error)
+}
+
+type UpdateSongHandler struct {
+	uc updateSongUseCase
+}
+
+func NewUpdateSongHandler(uc updateSongUseCase) *UpdateSongHandler {
+	return &UpdateSongHandler{uc: uc}
+}
+
+func (h *UpdateSongHandler) Handle(c *gin.Context) {
+	var uriReq dto.FetchSongRequest
+	if err := c.ShouldBindUri(&uriReq); err != nil {
+		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
+		return
+	}
+
+	var req dto.UpdateSongRequest
+	val, exists := c.Get("validatedRequest")
+	if exists {
+		req = *val.(*dto.UpdateSongRequest)
+	} else if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
+		return
+	}
+
+	updatedSong, err := h.uc.UpdateSong(uriReq.ID, &req)
+	if err != nil {
+		var appErr *apperror.AppError
+		if errors.As(err, &appErr) && appErr.Code == apperror.NotFound {
+			framework.SendError(c, http.StatusNotFound, err.Error(), err)
+			return
+		}
+		framework.SendError(c, http.StatusInternalServerError, err.Error(), err)
+		return
+	}
+
+	framework.SendSuccess(c, http.StatusOK, "Song updated successfully", updatedSong)
+}

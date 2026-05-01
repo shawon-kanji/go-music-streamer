@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/dto"
 	"go-music-streamer/internal/framework"
 
@@ -42,6 +44,49 @@ func (h *CreatePlaylistHandler) Handle(c *gin.Context) {
 	}
 
 	framework.SendSuccess(c, http.StatusCreated, "Playlist created successfully", res)
+}
+
+type updatePlaylistUseCase interface {
+	UpdatePlaylist(playlistID uint, userID uint, req *dto.UpdatePlaylistRequest) (*dto.PlaylistResponse, error)
+}
+
+type UpdatePlaylistHandler struct {
+	uc updatePlaylistUseCase
+}
+
+func NewUpdatePlaylistHandler(uc updatePlaylistUseCase) *UpdatePlaylistHandler {
+	return &UpdatePlaylistHandler{uc: uc}
+}
+
+func (h *UpdatePlaylistHandler) Handle(c *gin.Context) {
+	playlistIDStr := c.Param("id")
+	playlistID, err := strconv.ParseUint(playlistIDStr, 10, 32)
+	if err != nil {
+		framework.BadRequest(c, fmt.Errorf("invalid playlist ID: %v", err))
+		return
+	}
+
+	var req dto.UpdatePlaylistRequest
+	val, exists := c.Get("validatedRequest")
+	if exists {
+		req = *val.(*dto.UpdatePlaylistRequest)
+	} else if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
+		return
+	}
+
+	userID, ok := getUserIDFromContext(c)
+	if !ok {
+		return
+	}
+
+	res, err := h.uc.UpdatePlaylist(uint(playlistID), userID, &req)
+	if err != nil {
+		handlePlaylistEditError(c, err)
+		return
+	}
+
+	framework.SendSuccess(c, http.StatusOK, "Playlist updated successfully", res)
 }
 
 type fetchPlaylistsUseCase interface {
@@ -82,7 +127,7 @@ func (h *FetchPlaylistsHandler) Handle(c *gin.Context) {
 }
 
 type addSongToPlaylistUseCase interface {
-	AddSong(playlistID uint, req *dto.AddSongToPlaylistRequest) error
+	AddSong(playlistID uint, userID uint, req *dto.AddSongToPlaylistRequest) error
 }
 
 type AddSongToPlaylistHandler struct {
@@ -110,9 +155,14 @@ func (h *AddSongToPlaylistHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	err = h.uc.AddSong(uint(playlistID), &req)
+	userID, ok := getUserIDFromContext(c)
+	if !ok {
+		return
+	}
+
+	err = h.uc.AddSong(uint(playlistID), userID, &req)
 	if err != nil {
-		framework.InternalServerError(c, err)
+		handlePlaylistEditError(c, err)
 		return
 	}
 
@@ -146,4 +196,39 @@ func (h *FetchPlaylistHandler) Handle(c *gin.Context) {
 	}
 
 	framework.SendSuccess(c, http.StatusOK, "Playlist fetched successfully", res)
+}
+
+func getUserIDFromContext(c *gin.Context) (uint, bool) {
+	userIDVal, exists := c.Get("userID")
+	if !exists {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "identity missing from secure context"))
+		return 0, false
+	}
+
+	userID, ok := userIDVal.(uint)
+	if !ok {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "invalid identity format in secure context"))
+		return 0, false
+	}
+
+	return userID, true
+}
+
+func handlePlaylistEditError(c *gin.Context, err error) {
+	var appErr *apperror.AppError
+	if errors.As(err, &appErr) {
+		switch appErr.Code {
+		case apperror.NotFound:
+			framework.SendError(c, http.StatusNotFound, appErr.Message, err)
+			return
+		case apperror.Unauthorized:
+			framework.Forbidden(c, err)
+			return
+		case apperror.BadRequest, apperror.DataValidationError:
+			framework.BadRequest(c, err)
+			return
+		}
+	}
+
+	framework.InternalServerError(c, err)
 }

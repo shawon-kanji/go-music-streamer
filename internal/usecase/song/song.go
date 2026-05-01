@@ -8,6 +8,7 @@ import (
 type SongUseCase interface {
 	ListSongs(page int, limit int) (*dto.PaginatedSongResponse, error)
 	FetchSongByID(id uint) (*dto.SongResponse, error)
+	UpdateSong(id uint, req *dto.UpdateSongRequest) (*dto.SongResponse, error)
 }
 
 type songUseCase struct {
