@@ -11,6 +11,7 @@ import (
 )
 
 type SongRepository interface {
+	CreateSong(song *entity.Song) (*entity.Song, error)
 	ListSongs(page int, limit int) ([]*entity.Song, int64, error)
 	GetSongByID(id uint) (*entity.Song, error)
 	UpdateSong(song *entity.Song) (*entity.Song, error)
@@ -22,6 +23,35 @@ type songRepository struct {
 
 func NewSongRepository(db *gorm.DB) SongRepository {
 	return &songRepository{db: db}
+}
+
+func (r *songRepository) CreateSong(song *entity.Song) (*entity.Song, error) {
+	songModel := &postgres.Song{
+		Title:     song.Title,
+		Artist:    song.Artist,
+		Album:     song.Album,
+		Genre:     song.Genre,
+		Duration:  song.Duration,
+		URL:       song.URL,
+		LikeCount: song.LikeCount,
+		Thumbnail: song.Thumbnail,
+	}
+
+	if err := r.db.Create(songModel).Error; err != nil {
+		return nil, err
+	}
+
+	return &entity.Song{
+		ID:        songModel.ID,
+		Title:     songModel.Title,
+		Artist:    songModel.Artist,
+		Album:     songModel.Album,
+		Genre:     songModel.Genre,
+		Duration:  songModel.Duration,
+		URL:       songModel.URL,
+		LikeCount: songModel.LikeCount,
+		Thumbnail: songModel.Thumbnail,
+	}, nil
 }
 
 func (r *songRepository) ListSongs(page int, limit int) ([]*entity.Song, int64, error) {
@@ -56,7 +86,7 @@ func (r *songRepository) ListSongs(page int, limit int) ([]*entity.Song, int64, 
 			Album:     song.Album,
 			Genre:     song.Genre,
 			Duration:  song.Duration,
-			Url:       song.Url,
+			URL:       song.URL,
 			LikeCount: song.LikeCount,
 			Thumbnail: song.Thumbnail,
 		})
@@ -81,7 +111,7 @@ func (r *songRepository) GetSongByID(id uint) (*entity.Song, error) {
 		Album:     song.Album,
 		Genre:     song.Genre,
 		Duration:  song.Duration,
-		Url:       song.Url,
+		URL:       song.URL,
 		LikeCount: song.LikeCount,
 		Thumbnail: song.Thumbnail,
 	}, nil
@@ -101,7 +131,7 @@ func (r *songRepository) UpdateSong(song *entity.Song) (*entity.Song, error) {
 	songModel.Album = song.Album
 	songModel.Genre = song.Genre
 	songModel.Duration = song.Duration
-	songModel.Url = song.Url
+	songModel.URL = song.URL
 	songModel.Thumbnail = song.Thumbnail
 
 	if err := r.db.Save(&songModel).Error; err != nil {
@@ -115,7 +145,7 @@ func (r *songRepository) UpdateSong(song *entity.Song) (*entity.Song, error) {
 		Album:     songModel.Album,
 		Genre:     songModel.Genre,
 		Duration:  songModel.Duration,
-		Url:       songModel.Url,
+		URL:       songModel.URL,
 		LikeCount: songModel.LikeCount,
 		Thumbnail: songModel.Thumbnail,
 	}, nil

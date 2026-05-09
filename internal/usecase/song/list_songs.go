@@ -25,7 +25,7 @@ func (useCase *songUseCase) ListSongs(page int, limit int) (*dto.PaginatedSongRe
 			Artist:    song.Artist,
 			Album:     song.Album,
 			Genre:     song.Genre,
-			URL:       song.Url,
+			URL:       song.URL,
 			Duration:  song.Duration,
 			LikeCount: song.LikeCount,
 			Thumbnail: song.Thumbnail,

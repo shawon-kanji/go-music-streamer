@@ -9,10 +9,18 @@ import (
 )
 
 type fakeSongRepo struct {
+	createSongFn  func(song *entity.Song) (*entity.Song, error)
 	getSongFn     func(id uint) (*entity.Song, error)
 	updateSongFn  func(song *entity.Song) (*entity.Song, error)
 	updateCalled  bool
 	lastUpdateArg *entity.Song
+}
+
+func (f *fakeSongRepo) CreateSong(song *entity.Song) (*entity.Song, error) {
+	if f.createSongFn != nil {
+		return f.createSongFn(song)
+	}
+	return song, nil
 }
 
 func (f *fakeSongRepo) ListSongs(page int, limit int) ([]*entity.Song, int64, error) {
@@ -45,7 +53,7 @@ func TestUpdateSong_Success(t *testing.T) {
 			Album:     "old album",
 			Genre:     "old genre",
 			Duration:  100,
-			Url:       "old-url",
+			URL:       "old-url",
 			Thumbnail: "old-thumb",
 		}, nil
 	}
@@ -71,8 +79,8 @@ func TestUpdateSong_Success(t *testing.T) {
 	if repo.lastUpdateArg.Title != "new" {
 		t.Fatalf("expected title to be updated, got %q", repo.lastUpdateArg.Title)
 	}
-	if repo.lastUpdateArg.Url != "new-url" {
-		t.Fatalf("expected url to be updated, got %q", repo.lastUpdateArg.Url)
+	if repo.lastUpdateArg.URL != "new-url" {
+		t.Fatalf("expected url to be updated, got %q", repo.lastUpdateArg.URL)
 	}
 	if repo.lastUpdateArg.Artist != "old artist" {
 		t.Fatalf("expected artist unchanged, got %q", repo.lastUpdateArg.Artist)

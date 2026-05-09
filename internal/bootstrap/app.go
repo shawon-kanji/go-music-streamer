@@ -19,6 +19,7 @@ type AppHandlers struct {
 	ListSongsHandler  *handlers.ListSongsHandler
 	FetchSongHandler  *handlers.FetchSongHandler
 	UpdateSongHandler *handlers.UpdateSongHandler
+	SongHandler       *handlers.SongHandler
 
 	CreatePlaylistHandler    *handlers.CreatePlaylistHandler
 	UpdatePlaylistHandler    *handlers.UpdatePlaylistHandler
@@ -48,6 +49,7 @@ func InitHandlers(db *gorm.DB) *AppHandlers {
 		ListSongsHandler:  handlers.NewListSongsHandler(songUc),
 		FetchSongHandler:  handlers.NewFetchSongHandler(songUc),
 		UpdateSongHandler: handlers.NewUpdateSongHandler(songUc),
+		SongHandler:       handlers.NewSongHandler(songUc),
 
 		CreatePlaylistHandler:    handlers.NewCreatePlaylistHandler(playlistUc),
 		UpdatePlaylistHandler:    handlers.NewUpdatePlaylistHandler(playlistUc),

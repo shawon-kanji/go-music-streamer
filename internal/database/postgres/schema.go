@@ -77,7 +77,7 @@ type Song struct {
 	Album     string
 	Genre     string
 	Duration  uint   // Duration in seconds
-	Url       string `gorm:"not null"` // URL to the song file
+	URL       string `gorm:"not null"` // URL to the song file
 	LikeCount uint   `gorm:"default:0"`
 	Thumbnail string // URL to song thumbnail image
 }

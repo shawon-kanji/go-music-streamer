@@ -71,7 +71,7 @@ func (r *playlistRepository) GetPlaylistByID(id uint) (*entity.Playlist, error) 
 			Album:     songModel.Album,
 			Genre:     songModel.Genre,
 			Duration:  songModel.Duration,
-			Url:       songModel.Url,
+			URL:       songModel.URL,
 			LikeCount: songModel.LikeCount,
 			Thumbnail: songModel.Thumbnail,
 		})

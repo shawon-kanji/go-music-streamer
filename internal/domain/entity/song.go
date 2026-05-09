@@ -6,7 +6,7 @@ type Song struct {
 	Artist    string
 	Album     string
 	Duration  uint // Duration in seconds
-	Url       string
+	URL       string
 	Genre     string
 	LikeCount uint
 	Thumbnail string

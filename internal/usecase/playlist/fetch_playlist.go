@@ -26,7 +26,7 @@ func (uc *useCase) FetchPlaylist(id uint) (*dto.PlaylistResponse, error) {
 			Artist:    song.Artist,
 			Album:     song.Album,
 			Duration:  song.Duration,
-			URL:       song.Url,
+			URL:       song.URL,
 			LikeCount: song.LikeCount,
 			Genre:     song.Genre,
 			Thumbnail: song.Thumbnail,

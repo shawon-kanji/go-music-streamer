@@ -41,7 +41,7 @@ func (uc *useCase) UpdatePlaylist(playlistID uint, userID uint, req *dto.UpdateP
 			Artist:    song.Artist,
 			Album:     song.Album,
 			Genre:     song.Genre,
-			URL:       song.Url,
+			URL:       song.URL,
 			Duration:  song.Duration,
 			LikeCount: song.LikeCount,
 			Thumbnail: song.Thumbnail,

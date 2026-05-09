@@ -1,8 +1,20 @@
 package dto
 
+import "mime/multipart"
+
 type ListSongsRequest struct {
 	Page  int `form:"page" binding:"omitempty,min=1"`
 	Limit int `form:"limit" binding:"omitempty,min=1,max=100"`
+}
+
+type CreateSongRequest struct {
+	Title     string `json:"title" binding:"required"`
+	Artist    string `json:"artist" binding:"required"`
+	Album     string `json:"album" binding:"required"`
+	Genre     string `json:"genre" binding:"required"`
+	Duration  uint   `json:"duration" binding:"required"` // Duration in seconds
+	URL       string `json:"url" binding:"required"`
+	Thumbnail string `json:"thumbnail" binding:"omitempty"`
 }
 
 type SongResponse struct {
@@ -37,4 +49,13 @@ type UpdateSongRequest struct {
 	URL       *string `json:"url" binding:"omitempty"`
 	Genre     *string `json:"genre" binding:"omitempty"`
 	Thumbnail *string `json:"thumbnail" binding:"omitempty"`
+}
+
+type UploadSongRequest struct {
+	Title    string                `form:"title" binding:"required"`
+	Artist   string                `form:"artist" binding:"required"`
+	Album    string                `form:"album" binding:"required"`
+	Genre    string                `form:"genre" binding:"required"`
+	Duration uint                  `form:"duration" binding:"required"`
+	File     *multipart.FileHeader `form:"file" binding:"required"`
 }

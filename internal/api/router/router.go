@@ -14,6 +14,8 @@ import (
 func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 	r := gin.Default()
 
+	r.MaxMultipartMemory = 10 << 20 // 10 MiB
+
 	// Fix: [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe.
 	r.SetTrustedProxies(nil)
 
@@ -35,6 +37,7 @@ func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 		secureRoutes.GET("/songs", appHandlers.ListSongsHandler.Handle)
 		secureRoutes.GET("/songs/:id", appHandlers.FetchSongHandler.Handle)
 		secureRoutes.PATCH("/songs/:id", middleware.ValidateJSON(dto.UpdateSongRequest{}, "validatedRequest"), appHandlers.UpdateSongHandler.Handle)
+		secureRoutes.POST("/songs/upload", appHandlers.SongHandler.UploadSong)
 
 		// Playlist routes
 		secureRoutes.POST("/playlists", middleware.ValidateJSON(dto.CreatePlaylistRequest{}, "validatedRequest"), appHandlers.CreatePlaylistHandler.Handle)

@@ -137,14 +137,14 @@ func main() {
 	// 7. Seed Songs
 	log.Println("Seeding Songs...")
 	songs := []postgres.Song{
-		{Title: "Bohemian Rhapsody", Artist: "Queen", Album: "A Night at the Opera", Duration: 354, Url: "http://example.com/song1.mp3"},
-		{Title: "Stairway to Heaven", Artist: "Led Zeppelin", Album: "Led Zeppelin IV", Duration: 482, Url: "http://example.com/song2.mp3"},
-		{Title: "Hotel California", Artist: "Eagles", Album: "Hotel California", Duration: 390, Url: "http://example.com/song3.mp3"},
-		{Title: "Sweet Child O' Mine", Artist: "Guns N' Roses", Album: "Appetite for Destruction", Duration: 356, Url: "http://example.com/song4.mp3"},
-		{Title: "Imagine", Artist: "John Lennon", Album: "Imagine", Duration: 183, Url: "http://example.com/song5.mp3"},
-		{Title: "Comfortably Numb", Artist: "Pink Floyd", Album: "The Wall", Duration: 382, Url: "http://example.com/song6.mp3"},
-		{Title: "Hey Jude", Artist: "The Beatles", Album: "Hey Jude", Duration: 431, Url: "http://example.com/song7.mp3"},
-		{Title: "Smells Like Teen Spirit", Artist: "Nirvana", Album: "Nevermind", Duration: 301, Url: "http://example.com/song8.mp3"},
+		{Title: "Bohemian Rhapsody", Artist: "Queen", Album: "A Night at the Opera", Duration: 354, URL: "http://example.com/song1.mp3"},
+		{Title: "Stairway to Heaven", Artist: "Led Zeppelin", Album: "Led Zeppelin IV", Duration: 482, URL: "http://example.com/song2.mp3"},
+		{Title: "Hotel California", Artist: "Eagles", Album: "Hotel California", Duration: 390, URL: "http://example.com/song3.mp3"},
+		{Title: "Sweet Child O' Mine", Artist: "Guns N' Roses", Album: "Appetite for Destruction", Duration: 356, URL: "http://example.com/song4.mp3"},
+		{Title: "Imagine", Artist: "John Lennon", Album: "Imagine", Duration: 183, URL: "http://example.com/song5.mp3"},
+		{Title: "Comfortably Numb", Artist: "Pink Floyd", Album: "The Wall", Duration: 382, URL: "http://example.com/song6.mp3"},
+		{Title: "Hey Jude", Artist: "The Beatles", Album: "Hey Jude", Duration: 431, URL: "http://example.com/song7.mp3"},
+		{Title: "Smells Like Teen Spirit", Artist: "Nirvana", Album: "Nevermind", Duration: 301, URL: "http://example.com/song8.mp3"},
 	}
 	for i, song := range songs {
 		pgDB.Where(postgres.Song{Title: song.Title, Artist: song.Artist}).FirstOrCreate(&songs[i])

@@ -16,7 +16,7 @@ func (useCase *songUseCase) FetchSongByID(id uint) (*dto.SongResponse, error) {
 		Artist:    song.Artist,
 		Album:     song.Album,
 		Genre:     song.Genre,
-		URL:       song.Url,
+		URL:       song.URL,
 		Duration:  song.Duration,
 		LikeCount: song.LikeCount,
 		Thumbnail: song.Thumbnail,

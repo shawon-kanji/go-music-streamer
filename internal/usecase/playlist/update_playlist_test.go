@@ -1,5 +1,4 @@
 package playlist
-package playlist
 
 import (
 	"errors"
@@ -13,10 +12,10 @@ import (
 )
 
 type fakePlaylistRepo struct {
-	getPlaylistFn  func(id uint) (*entity.Playlist, error)
-	updateFn       func(playlist *entity.Playlist) (entity.Playlist, error)
-	updateCalled   bool
-	lastUpdateArg  *entity.Playlist
+	getPlaylistFn func(id uint) (*entity.Playlist, error)
+	updateFn      func(playlist *entity.Playlist) (entity.Playlist, error)
+	updateCalled  bool
+	lastUpdateArg *entity.Playlist
 }
 
 func (f *fakePlaylistRepo) CreatePlaylist(playlist *entity.Playlist) (entity.Playlist, error) {

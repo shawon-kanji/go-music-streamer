@@ -7,6 +7,7 @@ import (
 	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/dto"
 	"go-music-streamer/internal/framework"
+	"go-music-streamer/internal/usecase/song"
 
 	"github.com/gin-gonic/gin"
 )
@@ -66,10 +67,10 @@ func (h *FetchSongHandler) Handle(c *gin.Context) {
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) && appErr.Code == apperror.NotFound {
-			framework.SendError(c, http.StatusNotFound, err.Error(), err)
+			framework.NotFound(c)
 			return
 		}
-		framework.SendError(c, http.StatusInternalServerError, err.Error(), err)
+		framework.InternalServerError(c, err)
 		return
 	}
 
@@ -116,4 +117,29 @@ func (h *UpdateSongHandler) Handle(c *gin.Context) {
 	}
 
 	framework.SendSuccess(c, http.StatusOK, "Song updated successfully", updatedSong)
+}
+
+type SongHandler struct {
+	uc song.SongUseCase
+}
+
+func NewSongHandler(uc song.SongUseCase) *SongHandler {
+	return &SongHandler{uc: uc}
+}
+
+func (h *SongHandler) UploadSong(c *gin.Context) {
+	req := dto.UploadSongRequest{}
+	if err := c.ShouldBind(&req); err != nil {
+		framework.SendError(c, http.StatusBadRequest, "Failed to bind request data", framework.FormatValidationError(err))
+		return
+	}
+
+	fileNameHash, err := h.uc.UploadSong(&req, c)
+	if err != nil {
+		framework.SendError(c, http.StatusInternalServerError, "Failed to save uploaded file", err)
+		return
+	}
+
+	// For demonstration, we just return the file name. In a real application, you would save the file and create a song record.
+	framework.SendSuccess(c, http.StatusOK, "File uploaded successfully", gin.H{"fileName": fileNameHash})
 }

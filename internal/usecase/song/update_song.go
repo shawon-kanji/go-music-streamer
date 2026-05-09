@@ -25,7 +25,7 @@ func (useCase *songUseCase) UpdateSong(id uint, req *dto.UpdateSongRequest) (*dt
 		Artist:    updatedSong.Artist,
 		Album:     updatedSong.Album,
 		Genre:     updatedSong.Genre,
-		URL:       updatedSong.Url,
+		URL:       updatedSong.URL,
 		Duration:  updatedSong.Duration,
 		LikeCount: updatedSong.LikeCount,
 		Thumbnail: updatedSong.Thumbnail,
@@ -34,10 +34,6 @@ func (useCase *songUseCase) UpdateSong(id uint, req *dto.UpdateSongRequest) (*dt
 
 // applySongUpdates copies non-nil pointer fields from request DTO into matching entity fields.
 func applySongUpdates(target interface{}, req *dto.UpdateSongRequest) {
-	fieldMapping := map[string]string{
-		"URL": "Url",
-	}
-
 	reqVal := reflect.ValueOf(req).Elem()
 	reqType := reqVal.Type()
 	targetVal := reflect.ValueOf(target).Elem()
@@ -49,10 +45,7 @@ func applySongUpdates(target interface{}, req *dto.UpdateSongRequest) {
 		}
 
 		reqFieldName := reqType.Field(i).Name
-		targetFieldName, ok := fieldMapping[reqFieldName]
-		if !ok {
-			targetFieldName = reqFieldName
-		}
+		targetFieldName := reqFieldName
 
 		targetField := targetVal.FieldByName(targetFieldName)
 		if !targetField.IsValid() || !targetField.CanSet() || targetField.Type() != fieldVal.Elem().Type() {
