@@ -59,3 +59,22 @@ type UploadSongRequest struct {
 	Duration uint                  `form:"duration" binding:"required"`
 	File     *multipart.FileHeader `form:"file" binding:"required"`
 }
+
+type SearchSongsRequest struct {
+	Query             string  `json:"query" binding:"required"`
+	NResults          *int    `json:"nResults,omitempty" binding:"omitempty,min=1,max=100"`
+	ItemType          *string `json:"itemType,omitempty" binding:"omitempty"`
+	IncludeTagVectors *bool   `json:"includeTagVectors,omitempty" binding:"omitempty"`
+}
+
+type SemanticSearchItem struct {
+	ItemID   uint          `json:"itemId"`
+	Distance float64       `json:"distance"`
+	Song     *SongResponse `json:"song"`
+}
+
+type SemanticSearchResponse struct {
+	Query string               `json:"query"`
+	Count int                  `json:"count"`
+	Items []SemanticSearchItem `json:"items"`
+}

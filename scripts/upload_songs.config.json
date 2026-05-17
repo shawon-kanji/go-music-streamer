@@ -1,0 +1,13 @@
+{
+  "apiUrl": "http://localhost:8080/api/v1/songs/upload",
+  "authToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJnby1tdXNpYy1zdHJlYW1lci1hcGkiLCJlbWFpbCI6ImV4QGEuY29tIiwiZXhwIjoxNzc5MDI1MjYwLCJpYXQiOjE3NzkwMjQzNjAsImlzcyI6ImdvLW11c2ljLXN0cmVhbWVyIiwibmJmIjoxNzc5MDI0MzYwLCJzdWIiOjF9.w-zc51wrOZaINTeLE8uog-imCXykFjnwrE4kSAS4nLg",
+  "loginUrl": "http://localhost:8080/auth/login",
+  "loginEmail": "",
+  "loginPassword": "",
+  "filePath": "/Users/shawonkanji/Documents/Ahonnis_Mukherjee__-_-1.pdf",
+  "csvPath": "scripts/upload_songs_data.csv",
+  "totalUploads": 300,
+  "concurrency": 20,
+  "requestTimeoutSec": 30,
+  "appendIndexToTitle": true
+}

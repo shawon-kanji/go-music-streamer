@@ -14,6 +14,7 @@ type SongUseCase interface {
 	FetchSongByID(id uint) (*dto.SongResponse, error)
 	UpdateSong(id uint, req *dto.UpdateSongRequest) (*dto.SongResponse, error)
 	UploadSong(req *dto.UploadSongRequest, c *gin.Context) (*entity.Song, error)
+	SearchSongs(req *dto.SearchSongsRequest) (*dto.SemanticSearchResponse, error)
 }
 
 type songUseCase struct {

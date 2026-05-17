@@ -17,10 +17,11 @@ type AppHandlers struct {
 	UserLoginHandler   *handlers.UserLoginHandler
 	UserProfileHandler *handlers.UserProfileHandler
 
-	ListSongsHandler  *handlers.ListSongsHandler
-	FetchSongHandler  *handlers.FetchSongHandler
-	UpdateSongHandler *handlers.UpdateSongHandler
-	SongHandler       *handlers.SongHandler
+	ListSongsHandler   *handlers.ListSongsHandler
+	SearchSongsHandler *handlers.SearchSongsHandler
+	FetchSongHandler   *handlers.FetchSongHandler
+	UpdateSongHandler  *handlers.UpdateSongHandler
+	SongHandler        *handlers.SongHandler
 
 	CreatePlaylistHandler    *handlers.CreatePlaylistHandler
 	UpdatePlaylistHandler    *handlers.UpdatePlaylistHandler
@@ -51,10 +52,11 @@ func InitHandlers(db *gorm.DB) *AppHandlers {
 		UserLoginHandler:   handlers.NewUserLoginHandler(userUc),
 		UserProfileHandler: handlers.NewUserProfileHandler(),
 
-		ListSongsHandler:  handlers.NewListSongsHandler(songUc),
-		FetchSongHandler:  handlers.NewFetchSongHandler(songUc),
-		UpdateSongHandler: handlers.NewUpdateSongHandler(songUc),
-		SongHandler:       handlers.NewSongHandler(songUc, scheduler.TagGenerator),
+		ListSongsHandler:   handlers.NewListSongsHandler(songUc),
+		SearchSongsHandler: handlers.NewSearchSongsHandler(songUc),
+		FetchSongHandler:   handlers.NewFetchSongHandler(songUc),
+		UpdateSongHandler:  handlers.NewUpdateSongHandler(songUc),
+		SongHandler:        handlers.NewSongHandler(songUc, scheduler.TagGenerator),
 
 		CreatePlaylistHandler:    handlers.NewCreatePlaylistHandler(playlistUc),
 		UpdatePlaylistHandler:    handlers.NewUpdatePlaylistHandler(playlistUc),

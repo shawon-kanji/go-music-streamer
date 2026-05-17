@@ -128,6 +128,46 @@ type SongHandler struct {
 	tagQueue tagGeneratorQueue
 }
 
+type searchSongsUseCase interface {
+	SearchSongs(req *dto.SearchSongsRequest) (*dto.SemanticSearchResponse, error)
+}
+
+type SearchSongsHandler struct {
+	uc searchSongsUseCase
+}
+
+func NewSearchSongsHandler(uc searchSongsUseCase) *SearchSongsHandler {
+	return &SearchSongsHandler{uc: uc}
+}
+
+func (h *SearchSongsHandler) Handle(c *gin.Context) {
+	val, exists := c.Get("validatedRequest")
+	if !exists {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request missing from context"))
+		return
+	}
+
+	req, ok := val.(*dto.SearchSongsRequest)
+	if !ok || req == nil {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request has invalid type in context"))
+		return
+	}
+
+	res, err := h.uc.SearchSongs(req)
+	if err != nil {
+		var appErr *apperror.AppError
+		if errors.As(err, &appErr) && appErr.Code == apperror.BadRequest {
+			framework.SendError(c, http.StatusBadRequest, "Failed to search songs", err)
+			return
+		}
+
+		framework.SendError(c, http.StatusInternalServerError, "Failed to search songs", err)
+		return
+	}
+
+	framework.SendSuccess(c, http.StatusOK, "Semantic search completed", res)
+}
+
 type tagGeneratorQueue interface {
 	AddTask(task *entity.Song)
 }

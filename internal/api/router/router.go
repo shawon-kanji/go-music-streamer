@@ -35,6 +35,7 @@ func New(db *gorm.DB, appHandlers *bootstrap.AppHandlers) *gin.Engine {
 		// Any authenticated user can check their profile
 		secureRoutes.GET("/me", appHandlers.UserProfileHandler.Handle)
 		secureRoutes.GET("/songs", appHandlers.ListSongsHandler.Handle)
+		secureRoutes.POST("/songs/search", middleware.ValidateJSON(dto.SearchSongsRequest{}, "validatedRequest"), appHandlers.SearchSongsHandler.Handle)
 		secureRoutes.GET("/songs/:id", appHandlers.FetchSongHandler.Handle)
 		secureRoutes.PATCH("/songs/:id", middleware.ValidateJSON(dto.UpdateSongRequest{}, "validatedRequest"), appHandlers.UpdateSongHandler.Handle)
 		secureRoutes.POST("/songs/upload", appHandlers.SongHandler.UploadSong)
