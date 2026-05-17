@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"go-music-streamer/internal/api/handlers"
 	"go-music-streamer/internal/repository"
+	"go-music-streamer/internal/schedulers"
 	"go-music-streamer/internal/usecase/playlist"
 	"go-music-streamer/internal/usecase/song"
 	"go-music-streamer/internal/usecase/user"
@@ -40,7 +41,11 @@ func InitHandlers(db *gorm.DB) *AppHandlers {
 	songUc := song.NewSongUseCase(songRepo)
 	playlistUc := playlist.NewUseCase(playlistRepo)
 
-	// 3. Handlers (Granular, decoupled)
+	// 3. Schedulers
+	scheduler := &schedulers.Scheduler{}
+	schedulers.InitiateSchedulers(scheduler)
+
+	// 4. Handlers (Granular, decoupled)
 	return &AppHandlers{
 		UserSignupHandler:  handlers.NewUserSignupHandler(userUc),
 		UserLoginHandler:   handlers.NewUserLoginHandler(userUc),
@@ -49,7 +54,7 @@ func InitHandlers(db *gorm.DB) *AppHandlers {
 		ListSongsHandler:  handlers.NewListSongsHandler(songUc),
 		FetchSongHandler:  handlers.NewFetchSongHandler(songUc),
 		UpdateSongHandler: handlers.NewUpdateSongHandler(songUc),
-		SongHandler:       handlers.NewSongHandler(songUc),
+		SongHandler:       handlers.NewSongHandler(songUc, scheduler.TagGenerator),
 
 		CreatePlaylistHandler:    handlers.NewCreatePlaylistHandler(playlistUc),
 		UpdatePlaylistHandler:    handlers.NewUpdatePlaylistHandler(playlistUc),

@@ -26,18 +26,26 @@ func NewCreatePlaylistHandler(uc createPlaylistUseCase) *CreatePlaylistHandler {
 }
 
 func (h *CreatePlaylistHandler) Handle(c *gin.Context) {
-	var req dto.CreatePlaylistRequest
-
 	val, exists := c.Get("validatedRequest")
-	if exists {
-		req = *val.(*dto.CreatePlaylistRequest)
-	} else if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
+	if !exists {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request missing from context"))
 		return
 	}
-	req.CreatedBy = c.MustGet("userID").(uint) // Override with authenticated user ID from context
 
-	res, err := h.uc.CreatePlaylist(&req)
+	req, ok := val.(*dto.CreatePlaylistRequest)
+	if !ok || req == nil {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request has invalid type in context"))
+		return
+	}
+
+	userID, ok := getUserIDFromContext(c)
+	if !ok {
+		return
+	}
+
+	req.CreatedBy = userID // Override with authenticated user ID from context
+
+	res, err := h.uc.CreatePlaylist(req)
 	if err != nil {
 		framework.InternalServerError(c, err)
 		return
@@ -66,12 +74,15 @@ func (h *UpdatePlaylistHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdatePlaylistRequest
 	val, exists := c.Get("validatedRequest")
-	if exists {
-		req = *val.(*dto.UpdatePlaylistRequest)
-	} else if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
+	if !exists {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request missing from context"))
+		return
+	}
+
+	req, ok := val.(*dto.UpdatePlaylistRequest)
+	if !ok || req == nil {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request has invalid type in context"))
 		return
 	}
 
@@ -80,7 +91,7 @@ func (h *UpdatePlaylistHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	res, err := h.uc.UpdatePlaylist(uint(playlistID), userID, &req)
+	res, err := h.uc.UpdatePlaylist(uint(playlistID), userID, req)
 	if err != nil {
 		handlePlaylistEditError(c, err)
 		return
@@ -146,12 +157,15 @@ func (h *AddSongToPlaylistHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	var req dto.AddSongToPlaylistRequest
 	val, exists := c.Get("validatedRequest")
-	if exists {
-		req = *val.(*dto.AddSongToPlaylistRequest)
-	} else if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
+	if !exists {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request missing from context"))
+		return
+	}
+
+	req, ok := val.(*dto.AddSongToPlaylistRequest)
+	if !ok || req == nil {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request has invalid type in context"))
 		return
 	}
 
@@ -160,7 +174,7 @@ func (h *AddSongToPlaylistHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	err = h.uc.AddSong(uint(playlistID), userID, &req)
+	err = h.uc.AddSong(uint(playlistID), userID, req)
 	if err != nil {
 		handlePlaylistEditError(c, err)
 		return

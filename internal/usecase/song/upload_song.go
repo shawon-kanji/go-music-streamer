@@ -14,9 +14,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func (useCase *songUseCase) UploadSong(req *dto.UploadSongRequest, c *gin.Context) (string, error) {
+func (useCase *songUseCase) UploadSong(req *dto.UploadSongRequest, c *gin.Context) (*entity.Song, error) {
 	if err := os.MkdirAll("./uploads", 0755); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	ext := strings.ToLower(filepath.Ext(req.File.Filename))
@@ -24,19 +24,22 @@ func (useCase *songUseCase) UploadSong(req *dto.UploadSongRequest, c *gin.Contex
 	dstPath := filepath.Join("uploads", fileNameHash)
 
 	if err := c.SaveUploadedFile(req.File, dstPath); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if _, err := useCase.repo.CreateSong(&entity.Song{
+	songEntity := &entity.Song{
 		Title:    req.Title,
 		Artist:   req.Artist,
 		Album:    req.Album,
 		Genre:    req.Genre,
 		Duration: req.Duration,
 		URL:      dstPath,
-	}); err != nil {
-		return "", err
 	}
 
-	return fileNameHash, nil
+	if entity, err := useCase.repo.CreateSong(songEntity); err != nil {
+		return nil, err
+	} else {
+		return entity, nil
+	}
+
 }

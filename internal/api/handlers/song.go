@@ -6,6 +6,7 @@ import (
 
 	"go-music-streamer/internal/domain/apperror"
 	"go-music-streamer/internal/domain/dto"
+	"go-music-streamer/internal/domain/entity"
 	"go-music-streamer/internal/framework"
 	"go-music-streamer/internal/usecase/song"
 
@@ -96,16 +97,19 @@ func (h *UpdateSongHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdateSongRequest
 	val, exists := c.Get("validatedRequest")
-	if exists {
-		req = *val.(*dto.UpdateSongRequest)
-	} else if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, framework.FormatValidationError(err))
+	if !exists {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request missing from context"))
 		return
 	}
 
-	updatedSong, err := h.uc.UpdateSong(uriReq.ID, &req)
+	req, ok := val.(*dto.UpdateSongRequest)
+	if !ok || req == nil {
+		framework.InternalServerError(c, apperror.New(apperror.InternalError, "validated request has invalid type in context"))
+		return
+	}
+
+	updatedSong, err := h.uc.UpdateSong(uriReq.ID, req)
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) && appErr.Code == apperror.NotFound {
@@ -120,11 +124,16 @@ func (h *UpdateSongHandler) Handle(c *gin.Context) {
 }
 
 type SongHandler struct {
-	uc song.SongUseCase
+	uc       song.SongUseCase
+	tagQueue tagGeneratorQueue
 }
 
-func NewSongHandler(uc song.SongUseCase) *SongHandler {
-	return &SongHandler{uc: uc}
+type tagGeneratorQueue interface {
+	AddTask(task *entity.Song)
+}
+
+func NewSongHandler(uc song.SongUseCase, tagQueue tagGeneratorQueue) *SongHandler {
+	return &SongHandler{uc: uc, tagQueue: tagQueue}
 }
 
 func (h *SongHandler) UploadSong(c *gin.Context) {
@@ -134,12 +143,16 @@ func (h *SongHandler) UploadSong(c *gin.Context) {
 		return
 	}
 
-	fileNameHash, err := h.uc.UploadSong(&req, c)
+	entity, err := h.uc.UploadSong(&req, c)
 	if err != nil {
 		framework.SendError(c, http.StatusInternalServerError, "Failed to save uploaded file", err)
 		return
 	}
 
+	if h.tagQueue != nil {
+		h.tagQueue.AddTask(entity)
+	}
+
 	// For demonstration, we just return the file name. In a real application, you would save the file and create a song record.
-	framework.SendSuccess(c, http.StatusOK, "File uploaded successfully", gin.H{"fileName": fileNameHash})
+	framework.SendSuccess(c, http.StatusOK, "File uploaded successfully", gin.H{"fileName": entity.URL})
 }
